@@ -39,9 +39,13 @@ data JSONValue =
 
 --- main parser
 --- consinst of mulitple parsers
+-- <?>  = custom error message
 jsonValue :: Parser JSONValue
-jsonValue =  jsonBool <|> jsonStringLiterals <|> jsonObject <|> jsonArray
+jsonValue =  jsonBool <|> (jsonStringLiterals <?> "string literal") <|> jsonObject <|> jsonArray
 ---
+
+--(<||>) :: Parser a -> Parser a -> Parser a
+--p <||> q = (try p) <|> q
 
 jsonBool' :: Parser JSONValue
 jsonBool' = B <$> bool
