@@ -8,6 +8,7 @@ import Control.Monad
 -- oneOf = succeeds if the current character is in the supplied list of characters cs. Returns the parsed character.
 ws :: Parser String
 ws = many (oneOf " \t\n")
+--ws = many (oneOf " \t\n")
 
 -- gets a parser as parameter and 
 -- first run the parser

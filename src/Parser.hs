@@ -8,16 +8,8 @@ import Helper
 doIt :: IO ()
 doIt = putStrLn "doIt"
 
-
-
-
-
-
-
 closingTag :: Parser String
 closingTag = (lexeme $ string "</") *> (many (noneOf ['<', '>'])) <* (lexeme $ char '>')
-
-
 
 type AttributeName = String
 type AttributeValue = String
@@ -35,7 +27,7 @@ data HTMLValue = HTML OpeningTag [HTMLValue] ClosingTag | Content String
     deriving(Show)
 
 htmlParser :: Parser HTMLValue
-htmlParser = do 
+htmlParser = do
     oTag <- openingtag 
     val <- many htmlContent
     cTag <- closingtag
@@ -47,14 +39,14 @@ htmlParser = do
 
 -- html structure or content
 htmlContent :: Parser HTMLValue
-htmlContent = (try htmlParser) <|> (Content <$> (spaces *> some letter <* spaces))
+htmlContent = (try htmlParser) <|> (Content <$> (ws *> some letter <* ws))
 
 closingtag :: Parser ClosingTag
-closingtag = char '<' *> char '/' *> (CName <$> some letter) <* spaces <* char '>'
+closingtag = ws *> char '<' *> char '/' *> (CName <$> some letter) <* ws <* char '>' <* ws
 
 openingtag :: Parser OpeningTag
 openingtag = do
-    tagName <- char '<' *> some letter
+    tagName <- ws *> char '<' *> some letter <* ws
     attr <- many attribute
     char '>'
     return $ OName tagName attr
@@ -67,18 +59,15 @@ attribute = try attributeValue <|> attributeOnly
 
 attributeValue:: Parser Attribute
 attributeValue= do
-    spaces
-    attr <- some letter
-    spaces
-    char '='
-    spaces
-    char '"'
-    value <- (many (noneOf ['"'])) 
-    char '"'
+    attr <- ws *> some letter <* ws
+    char '=' <* ws
+    char '"' <* ws
+    value <- (many (noneOf ['"'])) <*ws
+    char '"' <* ws
     return $ A' attr value
 
 attributeOnly :: Parser Attribute
-attributeOnly = A <$> (spaces *> some letter <* spaces)
+attributeOnly = A <$> (ws *> spaces *> some letter <* spaces <* ws) 
 
 nameParser:: Parser String
 nameParser = undefined

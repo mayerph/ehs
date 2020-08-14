@@ -16,11 +16,20 @@ import Control.Monad
 
 main :: IO ()
 main = do
-    x <- parseFromFile jsonValue "data.txt"
+    x <- parseFromFile htmlParser "data.html"
     case x of 
-        Right (O x') -> do
-            print $ lookup "glossary" x'
-            doIt
+        Right (HTML a b c) -> do
+            print a
+            print b
+            print c
+            
 
+--main :: IO ()
+--main = do
+--    x <- parseFromFile openingtag "data.html"
+--    case x of 
+--        Right (OName a b) -> do
+--            print a
+--            print b
 
    
