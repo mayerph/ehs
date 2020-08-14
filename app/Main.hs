@@ -2,6 +2,7 @@
 module Main where
 
 import Lib
+import Parser
 import Text.ParserCombinators.Parsec hiding((<|>), many)
 import Control.Applicative
 import Control.Monad
@@ -19,6 +20,7 @@ main = do
     case x of 
         Right (O x') -> do
             print $ lookup "glossary" x'
+            doIt
 
 
    
