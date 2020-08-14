@@ -25,35 +25,39 @@ type AttributeValue = String
 data Attribute =  A AttributeName | A' AttributeName AttributeValue
     deriving(Show)
 -- data Tag = Name | Name' String [Attribute]
-data OpeningTag = ON String [Attribute]
+data OpeningTag = OName String [Attribute]
     deriving(Show)
 
-data ClosingTag = CN String
+data ClosingTag = CName String
     deriving(Show)
 
-data HTML = H OpeningTag [HTML] ClosingTag | C String
+data HTMLValue = HTML OpeningTag [HTMLValue] ClosingTag | Content String
+    deriving(Show)
 
-htmlParser :: Parser String
+htmlParser :: Parser HTMLValue
 htmlParser = do 
     oTag <- openingtag 
-    val <- many letter 
+    val <- htmlContent
+    val' <- htmlContent
     cTag <- closingtag
-    let oTagName = case oTag of ON a b -> a
-    let cTagName = case cTag of CN a -> a
+    let oTagName = case oTag of OName a b -> a
+    let cTagName = case cTag of CName a -> a
     case oTagName == cTagName of 
         False -> fail "my failure"
-        True -> return val
-    
+        True -> return $ HTML oTag [val, val'] cTag
+
+htmlContent :: Parser HTMLValue
+htmlContent = (try htmlParser) <|> (Content <$> many letter)
 
 closingtag :: Parser ClosingTag
-closingtag = char '<' *> char '/' *> (CN <$> some letter) <* spaces <* char '>'
+closingtag = char '<' *> char '/' *> (CName <$> some letter) <* spaces <* char '>'
 
 openingtag :: Parser OpeningTag
 openingtag = do
     tagName <- char '<' *> some letter
     attr <- many attribute
     char '>'
-    return $ ON tagName attr
+    return $ OName tagName attr
 
 -- parentAttribute
 -- parentAttribute = attribute <|> attribute':
