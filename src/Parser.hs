@@ -37,17 +37,17 @@ data HTMLValue = HTML OpeningTag [HTMLValue] ClosingTag | Content String
 htmlParser :: Parser HTMLValue
 htmlParser = do 
     oTag <- openingtag 
-    val <- htmlContent
-    val' <- htmlContent
+    val <- many htmlContent
     cTag <- closingtag
     let oTagName = case oTag of OName a b -> a
     let cTagName = case cTag of CName a -> a
     case oTagName == cTagName of 
         False -> fail "my failure"
-        True -> return $ HTML oTag [val, val'] cTag
+        True -> return $ HTML oTag val cTag
 
+-- html structure or content
 htmlContent :: Parser HTMLValue
-htmlContent = (try htmlParser) <|> (Content <$> many letter)
+htmlContent = (try htmlParser) <|> (Content <$> (spaces *> some letter <* spaces))
 
 closingtag :: Parser ClosingTag
 closingtag = char '<' *> char '/' *> (CName <$> some letter) <* spaces <* char '>'
