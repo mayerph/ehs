@@ -7,6 +7,8 @@ import Helper
 
 type AttributeName = String
 type AttributeValue = String
+data Operator = Eq | Lt | Gt | Le | Ge | Ne
+
 
 data Attribute =  A AttributeName | A' AttributeName AttributeValue
     deriving(Show)
@@ -31,8 +33,17 @@ htmlParser = do
 -- parses the content of a html document
 htmlContent :: Parser [HTMLValue]
 htmlContent = some $ (try htmlParser) <|> (Content <$> (ws *> ((some $ noneOf "<,\n")) <* ws))
---htmlContent = many $ (try htmlParser) <|> (Content <$> (ws *> (try satisfy' <|> (some (noneOf "</"))) <* ws))
 
+directive :: Parser String
+directive = do
+    string "*h" 
+    d <- (string "If" <|> string "For")
+    ws
+    char '='
+    ws
+    char '"'
+    val <- many (letter)
+    return $ d ++ val
 
 -- | Parses the closing tag of a html element
 -- e.g. </div>
