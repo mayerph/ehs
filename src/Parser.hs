@@ -82,22 +82,3 @@ attributeOnly = do
     name <- some letter
     ws 
     return $ A name
-
-
-
-helpers :: Parser String
-helpers = do
-    val <- ws *> removeChars "\t\n" 
-    return val
--- es gibt nur ein value
--- dennoch suchen wir nach \n und blanks und trennen die values
--- damit wir sie später wieder zusammensetzen können
-
-
-
-
-
-attributeValue' :: Parser String
-attributeValue' = do
-    val <- char 'n' *> many (noneOf "")
-    return val
