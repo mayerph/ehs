@@ -16,12 +16,10 @@ import Control.Monad
 
 main :: IO ()
 main = do
-    x <- parseFromFile htmlParser "data.html"
+    x <- parseFromFile htmlContent "data.html"
     case x of 
-        Right (HTML a b c) -> do
-            print a
-            print b
-            print c
+        Right (a) -> do
+           print a
             
 
 --main :: IO ()

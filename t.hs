@@ -8,7 +8,7 @@ import Helper
 type AttributeName = String
 type AttributeValue = String
 
-data Attribute =  A AttributeName | A' AttributeName AttributeValue
+data Attribute =  A AttributeName [AttributeValue] | A' AttributeName AttributeValue
     deriving(Show)
 -- data Tag = Name | Name' String [Attribute]
 data Element = Name String [Attribute]
@@ -62,16 +62,9 @@ attributeWithValue= do
     attr <- ws *> some letter <* ws
     char '=' <* ws
     char '"' <* ws
-    --value <- (many (noneOf ['"'])) <*ws
-    value <- attributeValue <* ws
+    value <- many ((noneOf "\"\t\n") <* many (oneOf "\"\t\n"))
     char '"' <* ws
     return $ A' attr value
-
-attributeValue :: Parser String
-attributeValue = do
-    value <-  ws *> many ((noneOf "\"\t\n") <* many (oneOf "\t\n")) 
-    return value
-
 
 -- | Parses an attribute without values
 -- e.g. <div hidden></div>
@@ -81,9 +74,12 @@ attributeOnly = do
     ws
     name <- some letter
     ws 
-    return $ A name
+    return $ A name []
 
-
+attributeValue :: Parser String
+attributeValue = do
+    value <- ws *> many ((noneOf " \"\t\n") <* many (oneOf " \"\t\n"))
+    return value
 
 helpers :: Parser String
 helpers = do
