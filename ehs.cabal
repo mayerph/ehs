@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ac727faef1317d7572e827894fc78def3b3d44016e969aa314103ae0e1a7ecf2
+-- hash: 06abb1f5d9d6dc1938d494643c55326a25164c84423cd5c7db811c627b59b912
 
 name:           ehs
 version:        0.1.0.0
@@ -28,10 +28,14 @@ source-repository head
 library
   exposed-modules:
       Expression
+      Expression2
+      Expression3
+      Expression4
       Helper
       Html
       Lib
       Parser
+      ParseWhile
   other-modules:
       Paths_ehs
   hs-source-dirs:
@@ -39,6 +43,7 @@ library
   build-depends:
       base >=4.7 && <5
     , parsec
+    , pretty
     , time
   default-language: Haskell2010
 
@@ -53,6 +58,7 @@ executable ehs-exe
       base >=4.7 && <5
     , ehs
     , parsec
+    , pretty
     , time
   default-language: Haskell2010
 
@@ -68,5 +74,6 @@ test-suite ehs-test
       base >=4.7 && <5
     , ehs
     , parsec
+    , pretty
     , time
   default-language: Haskell2010

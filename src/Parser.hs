@@ -103,3 +103,6 @@ attributeOnly = do
     name <- some letter
     ws 
     return $ A name
+
+was :: Bool 
+was = ("hallo" == "hallo" )
