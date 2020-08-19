@@ -32,7 +32,17 @@ htmlParser = do
 -- html structure or content
 -- parses the content of a html document
 htmlContent :: Parser [HTMLValue]
-htmlContent = some $ (try htmlParser) <|> (Content <$> (ws *> ((some $ noneOf "<,\n")) <* ws))
+htmlContent = some $ (try htmlParser) <|> (Content <$> content <* ws)
+
+
+content :: Parser String
+content = do
+  notFollowedBy openingtag
+  notFollowedBy closingtag
+  ws
+  text <- string "<" <|> many1 (noneOf "<\n")
+  rest <- content <|> pure ""
+  return (text ++ rest)
 
 directive :: Parser String
 directive = do
