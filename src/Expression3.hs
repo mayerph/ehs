@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -Wall #-}
 
 module Expression3 where 
-    
+
 import Control.Applicative (some)
 import Text.Parsec
 import Text.Parsec.Expr
@@ -133,7 +133,7 @@ bexpr1 = chainl1 bexpr2 op
 bexpr2 :: Parser Bool
 bexpr2 = False <$ char 'F' <|> True <$ char 'T'
      <|> try eqexpr
-     <|> parens bexpr0
+     -- <|> parens bexpr0
      where eqexpr = (==) <$> iexpr3 <* char '=' <*> iexpr3  -- this can't chain now
 iexpr3 :: Parser Int
 iexpr3 = chainl1 iterm op

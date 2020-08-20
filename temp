@@ -18,7 +18,7 @@ data Placeholder = P String
     deriving(Show)
 data AttributeValue = Value String | Placeholder Placeholder
     deriving(Show)
-data Attribute =  A AttributeName | A' AttributeName AttributeValue 
+data Attribute =  A AttributeName | Av AttributeName AttributeValue 
     deriving(Show)
 -- data Tag = Name | Name' String [Attribute]
 data Element = EName String [Attribute]
@@ -26,6 +26,29 @@ data Element = EName String [Attribute]
 
 data HTMLValue = HTML Element [HTMLValue] | Content String
     deriving(Show)
+
+
+
+instance Lift HTMLValue where
+    lift (Content i) = appE (conE 'Content) (lift i)
+    lift (HTML i h) = appE (appE (conE 'HTML) (lift i)) (lift h)
+
+instance Lift Element where
+    lift (EName x y) = appE (appE (conE 'EName) (lift x)) (lift y)
+
+instance Lift Attribute where 
+    lift (A i) = appE (conE 'A) (lift i)
+    lift (Av x y) = appE (appE (conE 'Av) (lift x)) (lift y)
+
+instance Lift Placeholder where
+    lift (P i) = appE (conE 'P) (lift i)
+
+instance Lift AttributeValue where
+    lift (Value i) = appE (conE 'A) (lift i)
+    lift (Placeholder i) = appE (conE 'A) (lift i)
+
+instance Lift Placeholder where
+    lift (P s) = appE (appE (conE 'Repeat) (appE (conE 'IntLit) (lift (1::Int)))) (unboundVarE (mkName s))
 
 htmlParser :: Parser HTMLValue
 htmlParser = do
@@ -96,7 +119,7 @@ attributeWithValue= do
     --value <- (many (noneOf ['"'])) <*ws
     value <- (try attributePlaceholder <|> attributeValue) <* ws
     char '"' <* ws
-    return $ A' attr value
+    return $ Av attr value
 
 attributeValue :: Parser AttributeValue
 attributeValue = do
@@ -124,6 +147,7 @@ attributeOnly = do
     name <- some letter
     ws 
     return $ A name
+
 
 
 

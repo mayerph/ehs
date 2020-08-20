@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 06abb1f5d9d6dc1938d494643c55326a25164c84423cd5c7db811c627b59b912
+-- hash: 538f1a1deb57bb7b8f2be9deaa1deda152dc9a0eaaf679d2e3fab1d132f17354
 
 name:           ehs
 version:        0.1.0.0
@@ -36,6 +36,7 @@ library
       Lib
       Parser
       ParseWhile
+      TH
   other-modules:
       Paths_ehs
   hs-source-dirs:
@@ -44,6 +45,7 @@ library
       base >=4.7 && <5
     , parsec
     , pretty
+    , template-haskell
     , time
   default-language: Haskell2010
 
@@ -59,6 +61,7 @@ executable ehs-exe
     , ehs
     , parsec
     , pretty
+    , template-haskell
     , time
   default-language: Haskell2010
 
@@ -75,5 +78,6 @@ test-suite ehs-test
     , ehs
     , parsec
     , pretty
+    , template-haskell
     , time
   default-language: Haskell2010

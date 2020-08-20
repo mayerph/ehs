@@ -164,3 +164,5 @@ parseFile file = do
   case parse whileParser "" program of
     Left e  -> print e >> fail "parser error"
     Right r -> return r
+
+    

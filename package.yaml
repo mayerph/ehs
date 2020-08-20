@@ -24,6 +24,7 @@ dependencies:
   - time
   - parsec
   - pretty
+  - template-haskell
 
 library:
   source-dirs: src
