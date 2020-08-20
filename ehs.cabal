@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 538f1a1deb57bb7b8f2be9deaa1deda152dc9a0eaaf679d2e3fab1d132f17354
+-- hash: da15d06386e1de33fa10afa75e985cfca36136621a517842d8a68cea6e0627ef
 
 name:           ehs
 version:        0.1.0.0
@@ -36,7 +36,6 @@ library
       Lib
       Parser
       ParseWhile
-      TH
   other-modules:
       Paths_ehs
   hs-source-dirs:

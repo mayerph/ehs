@@ -1,4 +1,3 @@
-{-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
 module Parser where
 
 import Text.ParserCombinators.Parsec hiding((<|>), many)
@@ -124,7 +123,6 @@ attributeOnly = do
     name <- some letter
     ws 
     return $ A name
-
 
 
 --teststuff:: IO ()
