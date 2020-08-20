@@ -25,6 +25,8 @@ dependencies:
   - parsec
   - pretty
   - template-haskell
+  - syb
+  - attoparsec
 
 library:
   source-dirs: src
