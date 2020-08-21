@@ -1,12 +1,17 @@
+{-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
 module Parser where
 
-import Text.ParserCombinators.Parsec hiding((<|>), many)
-import Control.Applicative
-import Control.Monad
-import Helper
+import Data.List
 import Language.Haskell.TH 
 import Language.Haskell.TH.Quote
 import Language.Haskell.TH.Syntax 
+import Control.Monad
+
+import Text.ParserCombinators.Parsec hiding((<|>), many)
+import Control.Applicative
+import Helper
+    
+
 
 
 
@@ -17,7 +22,7 @@ data Placeholder = P String
     deriving(Show)
 data AttributeValue = Value String | Placeholder Placeholder
     deriving(Show)
-data Attribute =  A AttributeName | A' AttributeName AttributeValue 
+data Attribute =  A AttributeName | Av AttributeName AttributeValue 
     deriving(Show)
 -- data Tag = Name | Name' String [Attribute]
 data Element = EName String [Attribute]
@@ -25,6 +30,37 @@ data Element = EName String [Attribute]
 
 data HTMLValue = HTML Element [HTMLValue] | Content String
     deriving(Show)
+
+
+instance Lift HTMLValue where
+    lift (HTML x y) = appE (appE (conE 'HTML) (lift x)) (lift y)
+    lift (Content i) = appE (conE 'Content) (unboundVarE (mkName i))
+
+instance Lift Element where
+    lift (EName x y) = appE (appE (conE 'EName) (lift x)) (lift y)
+
+instance Lift Attribute where
+    lift (A i) = appE (conE 'A) (lift i)
+    lift (Av x y) = appE (appE (conE 'Av) (lift x)) (lift y)
+
+instance Lift AttributeValue where
+    lift (Value i) = appE (conE 'Value) (lift i)
+    lift (Placeholder i) = appE (conE 'Placeholder) (lift i)
+
+instance Lift Placeholder where
+    lift (P i) = appE (conE 'P) (unboundVarE (mkName i))
+    
+
+compile str = do 
+    case parse htmlContent "" str of 
+        Right (a) -> a
+        Left (_) -> error "parse error"
+
+html = QuasiQuoter {quoteExp  = lift . compile,
+    quotePat  = error "no pats for html",
+    quoteType  = error "no type for html",
+    quoteDec  = error "no decs for html"
+}
 
 htmlParser :: Parser HTMLValue
 htmlParser = do
@@ -39,7 +75,7 @@ htmlParser = do
 -- html structure or content
 -- parses the content of a html document
 htmlContent :: Parser [HTMLValue]
-htmlContent = some $ (try htmlParser) <|> (Content <$> content <* ws)
+htmlContent = many $ (try htmlParser) <|> (Content <$> content <* ws)
 
 
 content :: Parser String
@@ -95,7 +131,7 @@ attributeWithValue= do
     --value <- (many (noneOf ['"'])) <*ws
     value <- (try attributePlaceholder <|> attributeValue) <* ws
     char '"' <* ws
-    return $ A' attr value
+    return $ Av attr value
 
 attributeValue :: Parser AttributeValue
 attributeValue = do

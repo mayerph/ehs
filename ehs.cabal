@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 89ed0325f6cab301eccd571b61a9c2919248a11b87e146fbec0f042c3d4ce855
+-- hash: 8a312d5ad7fb52613bde77c03b2161332345fcc7c225967c4aa11c37ef532959
 
 name:           ehs
 version:        0.1.0.0
@@ -37,6 +37,7 @@ library
       ParseWhile
       Simple
       Template
+      TestParser
       TestSimple
   other-modules:
       Paths_ehs
