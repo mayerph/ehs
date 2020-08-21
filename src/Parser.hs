@@ -28,13 +28,20 @@ data Attribute =  A AttributeName | Av AttributeName AttributeValue
 data Element = EName String [Attribute]
     deriving(Show)
 
-data HTMLValue = HTML Element [HTMLValue] | Content String
+data Content = CText String | CVar Placeholder
+    deriving(Show)
+
+data HTMLValue = HTML Element [HTMLValue] | HContent Content
     deriving(Show)
 
 
 instance Lift HTMLValue where
     lift (HTML x y) = appE (appE (conE 'HTML) (lift x)) (lift y)
-    lift (Content i) = appE (conE 'Content) (unboundVarE (mkName i))
+    lift (HContent i) = appE (conE 'HContent) (lift i)
+
+instance Lift Content where
+    lift (CText i) = appE (conE 'CText) (lift i)
+    lift (CVar i) = appE (conE 'CVar) (lift i)
 
 instance Lift Element where
     lift (EName x y) = appE (appE (conE 'EName) (lift x)) (lift y)
@@ -75,7 +82,7 @@ htmlParser = do
 -- html structure or content
 -- parses the content of a html document
 htmlContent :: Parser [HTMLValue]
-htmlContent = many $ (try htmlParser) <|> (Content <$> content <* ws)
+htmlContent = many $ (try htmlParser) <|> (HContent <$> (try (CVar <$> placeholder) <|> (CText <$> content <* ws)))
 
 
 content :: Parser String
@@ -83,9 +90,15 @@ content = do
   notFollowedBy openingtag
   notFollowedBy closingtag
   ws
-  text <- string "<" <|> many1 (noneOf "<\n")
+  text <- string "<" <|> many1 (noneOf "<\n{}")
   rest <- content <|> pure ""
   return (text ++ rest)
+
+openingPlaceholder :: Parser Char
+openingPlaceholder = char '{' *> ws *> char '{'
+
+closingPlaceholder :: Parser Char
+closingPlaceholder = char '}' *> ws *> char '}'
 
 directive :: Parser String
 directive = do
@@ -139,15 +152,23 @@ attributeValue = do
     return $ Value value
 
 attributePlaceholder :: Parser AttributeValue
-attributePlaceholder = Placeholder <$> placeholder
+attributePlaceholder = Placeholder <$> placeholder'
 
 
 placeholder :: Parser Placeholder
 placeholder = do
-    char '{' *> ws *> char '{'
+    openingPlaceholder
     value <- ws *> some (letter <|> oneOf "-_" <|> digit) <* ws
-    char '}' *> ws *> char '}'
+    closingPlaceholder
     return $ P value
+
+placeholder' :: Parser Placeholder
+placeholder' = do
+    char '{'
+    value <- ws *> some (letter <|> oneOf "-_" <|> digit) <* ws
+    char '}'
+    return $ P value
+    
 
 
 -- | Parses an attribute without values

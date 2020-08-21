@@ -7,4 +7,4 @@ test = "Wassermelone"
 wasser = "fan"
 myId = "was ist los"
 
-testParser = print [html|<div class="test" id="{{myId}}"></div>|]
+testParser = print [html|<div class="test" id="{myId}">{{ test }}hi geht heute {{ wasser }}</div>|]
