@@ -11,7 +11,7 @@ import Control.Monad
 
 
 data Format = L String -- ^ literal string, z. B hey
-        | S -- ^ %s -> muss ein String sein
+        | S -- ^ %s -> muss ein String sein. 
         | G -- ^ %g generic type -> kann auch Boolean sein, muss aber von 
     deriving Show
 
@@ -39,9 +39,11 @@ printf = printfP . format
 string :: String -> ExpQ -- ^ quote the string
 string = litE . StringL
 
+-- varE = 	{ x }
 varExp :: Int -> ExpQ -- ^ quoted variable xi
-varExp i = varE $ mkName ("x" ++ show i)
+varExp i = unboundVarE $ mkName ("x" ++ show i)
 
+-- varP = 	{ x }
 varPat :: Int -> PatQ -- ^ quoted pattern xi
 varPat i = varP $ mkName ("x" ++ show i)
 
