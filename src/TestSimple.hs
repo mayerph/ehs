@@ -4,5 +4,6 @@ module TestSimple where
 import Simple
 
 test = "Wassermelone"
-testSimple = print [simple|Hi{test}|]
+wasser = "fan"
+testSimple = print [simple|Hi{test}{wasser}|]
 
