@@ -12,33 +12,23 @@ import Text.ParserCombinators.Parsec hiding((<|>), many)
 import Control.Applicative
 import Helper
 
-data Simple2 a = S2 String | V2 String | Y2 String [a]
+data Simple2 a = S2 String | V2 String | Y2 String String [a]
     deriving Show
 
 
 data MyText2 a = T2 [Simple2 a] 
     deriving Show   
 
-data Simple = S String | V String | Y String [Int]
-    deriving Show
-data MyText = T [Simple]
-    deriving Show
+
 
 instance Lift (Simple2 a) where
     lift (S2 i) = appE (conE 'S2) (lift i)
     lift (V2 i) = appE (conE 'V2) (unboundVarE (mkName i))
-    lift (Y2 x y) = appE (appE (conE 'Y2) (lift x)) (listOfAs' x)
+    lift (Y2 x y z) = appE (appE (appE (conE 'Y2) (lift x)) (lift y)) (listOfAs' y)
 
 instance Lift (MyText2 a) where
     lift (T2 i) = appE (conE 'T2) (lift i)
 
-instance Lift Simple where
-    lift (S i) = appE (conE 'S) (lift i)
-    lift (V i) = appE (conE 'V) (unboundVarE (mkName i))
-    lift (Y x y) = appE (appE (conE 'Y) (lift x)) (listOfAs' x)
-
-instance Lift MyText where
-    lift (T i) = appE (conE 'T) (lift i)
 
 
 compile str = do 
@@ -76,6 +66,8 @@ parseVar = do
 parseList :: Parser (Simple2 a)
 parseList = do
     char '['
-    val <- some letter
+    a <- some letter
+    string "<-"
+    b <- some letter
     char ']'
-    return $ Y2 val []
+    return $ Y2 a b []

@@ -10,5 +10,5 @@ a2 = 3
 x = [1,2 :: Int]
 
 
-testSimple = print [simple|Hi[wasser]|]
+testSimple = print [simple|Hi[a<-wasser]|]
 
