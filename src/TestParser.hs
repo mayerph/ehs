@@ -6,5 +6,7 @@ import Parser
 test = "Wassermelone"
 wasser = "fan"
 myId = "was ist los"
+test2 = ["Wassermelone", "salamander"]
 
-testParser = print [html|<div class="test" id="{myId}">{{ test }}hi geht heute {{ wasser }}</div>|]
+
+testParser = [html|<div class="test" id="{myId}">{{ myId }} hi geht heute</div>|]
