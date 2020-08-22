@@ -21,7 +21,7 @@ data MyText = T [Simple]
 instance Lift Simple where
     lift (S i) = appE (conE 'S) (lift i)
     lift (V i) = appE (conE 'V) (unboundVarE (mkName i))
-    lift (Y x y) = appE (appE (conE 'Y) (unboundVarE (mkName x))) listOfAs'
+    lift (Y x y) = appE (appE (conE 'Y) (lift x)) (listOfAs' x)
 
 instance Lift MyText where
     lift (T i) = appE (conE 'T) (lift i)
@@ -41,8 +41,8 @@ simple = QuasiQuoter {quoteExp  = lift . compile,
 listOfAs :: ExpQ
 listOfAs = (listE (map varE [ mkName ('a' : show n) | n <- [1..2] ]))
 
-listOfAs' :: ExpQ
-listOfAs' = varE $ mkName "b"
+listOfAs' :: String -> ExpQ
+listOfAs' a = varE $ mkName a
 
 parseSimple :: Parser MyText
 parseSimple = T <$> (some (parseText <|> parseVar <|> parseList))
