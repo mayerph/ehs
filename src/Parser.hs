@@ -81,8 +81,8 @@ instance Lift Placeholder where
 mkFor (a:ax) = case (a) of
     (Single x x') -> case x of 
         (EName y y' y'') -> case y'' of
-            (F y y' y'') -> [a, a]
             (N) -> [a]
+            (F y y' y'') -> [a, a]
 
 
 
@@ -155,11 +155,24 @@ closingtag = ws *> char '<' *> char '/' *> (some letter) <* ws <* char '>' <* ws
 openingtag :: Parser (Element a)
 openingtag = do
     tagName <- ws *> char '<' *> some letter <* ws
+    for <- many parseList
     attr <- many attribute
     char '>'
-    return $ EName tagName attr N
+    case for of
+        (a:[]) -> return $ EName tagName attr a
+        ([]) -> return $ EName tagName attr N
+        _ -> fail "Multiple for declarations"
+    
 
 
+parseList :: Parser (For a)
+parseList = do
+    char '['
+    a <- some letter
+    string "<-"
+    b <- some letter
+    char ']'
+    return $ F a b []
 
   
 -- | Parses a single attribute of html tag

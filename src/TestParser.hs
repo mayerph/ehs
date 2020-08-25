@@ -4,10 +4,11 @@ module TestParser where
 import Parser
 
 test = "Wassermelone"
-wasser = "fan"
+
 myId = "was ist los2"
 test2 = ["Wassermelone", "salamander"]
 
+wasser = ["Wassermelone", "Pfirsich"]
 
 --testParser = [html|<div class="test" id="{myId}">{{ myId }} hi geht heute {{ myId }}</div>|]
-testParser = [html|<div>Hello World</div>|]
+testParser = [html|<div [a<-wasser]>Hello World</div>|]
