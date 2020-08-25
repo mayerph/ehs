@@ -25,14 +25,16 @@ data Attribute =  A AttributeName | Av AttributeName AttributeValue
 
 -- data Tag = Name | Name' String [Attribute]
 
-data Element = EName String [Attribute]
+data Element a = EName String [Attribute] (For a) 
     deriving(Show)
 
 data Content = CText String | CVar Placeholder
     deriving(Show)
 
-data SingleValue a = Single Element (For a) [HTMLValue a]
+data SingleValue a = Single (Element a) [HTMLValue a]
     deriving(Show)
+
+    --(For a) 
 
 data HTMLValue a = HTML [SingleValue a] | HContent Content
     deriving(Show)
@@ -48,18 +50,18 @@ instance Lift (For a) where
     lift (F x y z) = appE (appE (appE (conE 'F) (lift x)) (lift y)) (mkVar y)
 
 instance Lift (HTMLValue a) where
-    lift (HTML i) = appE (conE 'HTML) (lift $ listOfAs i)
+    lift (HTML i) = appE (conE 'HTML) (lift $ mkFor i)
     lift (HContent i) = appE (conE 'HContent) (lift i)
 
 instance Lift (SingleValue a) where
-    lift (Single x y z) = appE (appE (appE (conE 'Single) (lift x)) (lift y)) (lift z)
+    lift (Single x y) = appE (appE (conE 'Single) (lift x)) (lift y)
     
 instance Lift Content where
     lift (CText i) = appE (conE 'CText) (lift i)
     lift (CVar i) = appE (conE 'CVar) (lift i)
 
-instance Lift Element where
-    lift (EName x y) = appE (appE (conE 'EName) (lift x)) (lift y)
+instance Lift (Element a) where
+    lift (EName x y z) = appE (appE (appE (conE 'EName) (lift x)) (lift y)) (lift z)
 
 instance Lift Attribute where
     lift (A i) = appE (conE 'A) (lift i)
@@ -76,10 +78,12 @@ instance Lift Placeholder where
 
 
 --listOfAs (a:ax) = [a,a]
-listOfAs (a:ax) = case (a) of
-    (Single x x' x'') -> case x' of 
-        (F y y' y'') -> [a, a]
-        (N) -> [a]
+mkFor (a:ax) = case (a) of
+    (Single x x') -> case x of 
+        (EName y y' y'') -> case y'' of
+            (F y y' y'') -> [a, a]
+            (N) -> [a]
+
 
 
 mkVar :: String -> ExpQ
@@ -101,10 +105,10 @@ htmlParser = do
     element <- openingtag 
     val <-  htmlContent
     closingName <- closingtag
-    let elementName = case element of EName a b -> a
+    let elementName = case element of EName a b c -> a
     case elementName == closingName of 
         False -> fail "my failure"
-        True -> return $ HTML [Single element N val]
+        True -> return $ HTML [Single element val]
 
 -- html structure or content
 -- parses the content of a html document
@@ -112,14 +116,17 @@ htmlContent :: Parser [(HTMLValue a)]
 htmlContent = many $ (try htmlParser) <|> (HContent <$> (try (CVar <$> placeholder) <|> (CText <$> content <* ws)))
 
 
+--content :: Parser String
+--content = do
+  --notFollowedBy openingtag
+  --notFollowedBy closingtag
+  --ws
+  --text <- string "<" <|> many1 (noneOf "<\n{}")
+  --rest <- content <|> pure ""
+  --return (text ++ rest)
+ 
 content :: Parser String
-content = do
-  notFollowedBy openingtag
-  notFollowedBy closingtag
-  ws
-  text <- string "<" <|> many1 (noneOf "<\n{}")
-  rest <- content <|> pure ""
-  return (text ++ rest)
+content = (ws *> ((some $ noneOf "<,\n")) <* ws)
 
 openingPlaceholder :: Parser Char
 openingPlaceholder = char '{' *> ws *> char '{'
@@ -145,12 +152,12 @@ closingtag = ws *> char '<' *> char '/' *> (some letter) <* ws <* char '>' <* ws
 
 -- | Parses the opening tag of a html element
 -- e.g. <div id="parent">
-openingtag :: Parser Element
+openingtag :: Parser (Element a)
 openingtag = do
     tagName <- ws *> char '<' *> some letter <* ws
     attr <- many attribute
     char '>'
-    return $ EName tagName attr
+    return $ EName tagName attr N
 
 
 
