@@ -1,56 +1,93 @@
 {-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
 module Parser where
 
-import Text.ParserCombinators.Parsec hiding((<|>), many)
-import Control.Applicative
-import Control.Monad
-import Helper
+import Data.List
 import Language.Haskell.TH 
 import Language.Haskell.TH.Quote
 import Language.Haskell.TH.Syntax 
+import Control.Monad
 
-
+import Text.ParserCombinators.Parsec hiding((<|>), many)
+import Control.Applicative
+import Helper
 
 type AttributeName = String
 data Operator = Eq | Lt | Gt | Le | Ge | Ne
 
 data Placeholder = P String
     deriving(Show)
+
 data AttributeValue = Value String | Placeholder Placeholder
     deriving(Show)
+
 data Attribute =  A AttributeName | Av AttributeName AttributeValue 
     deriving(Show)
+
 -- data Tag = Name | Name' String [Attribute]
+
 data Element = EName String [Attribute]
     deriving(Show)
 
-data HTMLValue = HTML Element [HTMLValue] | Content String
+data Content = CText String | CVar Placeholder
+    deriving(Show)
+
+data SingleValue a = Single Element (For a) [HTMLValue a]
+    deriving(Show)
+    
+data HTMLValue a = HTML (SingleValue a) | HContent Content
     deriving(Show)
 
 
+--                   a    wasser  ["Wassermelone, "Pfirsich"]
+data For a = N | F String String [a] 
+    deriving Show
 
-instance Lift HTMLValue where
-    lift (Content i) = appE (conE 'Content) (lift i)
-    lift (HTML i h) = appE (appE (conE 'HTML) (lift i)) (lift h)
+
+instance Lift (For a) where
+    lift (N) = (conE 'N)
+    lift (F x y z) = appE (appE (appE (conE 'F) (lift x)) (lift y)) (mkVar y)
+
+instance Lift (HTMLValue a) where
+    lift (HTML i) = appE (conE 'HTML) (lift i)
+
+instance Lift (SingleValue a) where
+    lift (Single x y z) = appE (appE (appE (conE 'Single) (lift x)) (lift y)) (lift z)
+    
+
+instance Lift Content where
+    lift (CText i) = appE (conE 'CText) (lift i)
+    lift (CVar i) = appE (conE 'CVar) (lift i)
 
 instance Lift Element where
     lift (EName x y) = appE (appE (conE 'EName) (lift x)) (lift y)
 
-instance Lift Attribute where 
+instance Lift Attribute where
     lift (A i) = appE (conE 'A) (lift i)
     lift (Av x y) = appE (appE (conE 'Av) (lift x)) (lift y)
 
-instance Lift Placeholder where
-    lift (P i) = appE (conE 'P) (lift i)
-
 instance Lift AttributeValue where
-    lift (Value i) = appE (conE 'A) (lift i)
-    lift (Placeholder i) = appE (conE 'A) (lift i)
+    lift (Value i) = appE (conE 'Value) (lift i)
+    lift (Placeholder i) = appE (conE 'Placeholder) (lift i)
 
 instance Lift Placeholder where
-    lift (P s) = appE (appE (conE 'Repeat) (appE (conE 'IntLit) (lift (1::Int)))) (unboundVarE (mkName s))
+    lift (P i) = appE (conE 'P) (unboundVarE (mkName i))
+    
 
-htmlParser :: Parser HTMLValue
+mkVar :: String -> ExpQ
+mkVar a = varE $ mkName a
+
+compile str = do 
+    case parse htmlContent "" str of 
+        Right (a) -> a
+        Left (_) -> error "parse error"
+
+html = QuasiQuoter {quoteExp  = lift . compile,
+    quotePat  = error "no pats for html",
+    quoteType  = error "no type for html",
+    quoteDec  = error "no decs for html"
+}
+
+htmlParser :: Parser (HTMLValue a)
 htmlParser = do
     element <- openingtag 
     val <-  htmlContent
@@ -58,12 +95,12 @@ htmlParser = do
     let elementName = case element of EName a b -> a
     case elementName == closingName of 
         False -> fail "my failure"
-        True -> return $ HTML element val
+        True -> return (HTML (Single element N val))
 
 -- html structure or content
 -- parses the content of a html document
-htmlContent :: Parser [HTMLValue]
-htmlContent = some $ (try htmlParser) <|> (Content <$> content <* ws)
+htmlContent :: Parser [(HTMLValue a)]
+htmlContent = many $ (try htmlParser) <|> (HContent <$> (try (CVar <$> placeholder) <|> (CText <$> content <* ws)))
 
 
 content :: Parser String
@@ -71,9 +108,15 @@ content = do
   notFollowedBy openingtag
   notFollowedBy closingtag
   ws
-  text <- string "<" <|> many1 (noneOf "<\n")
+  text <- string "<" <|> many1 (noneOf "<\n{}")
   rest <- content <|> pure ""
   return (text ++ rest)
+
+openingPlaceholder :: Parser Char
+openingPlaceholder = char '{' *> ws *> char '{'
+
+closingPlaceholder :: Parser Char
+closingPlaceholder = char '}' *> ws *> char '}'
 
 directive :: Parser String
 directive = do
@@ -127,15 +170,23 @@ attributeValue = do
     return $ Value value
 
 attributePlaceholder :: Parser AttributeValue
-attributePlaceholder = Placeholder <$> placeholder
+attributePlaceholder = Placeholder <$> placeholder'
 
 
 placeholder :: Parser Placeholder
 placeholder = do
-    char '{' *> ws *> char '{'
+    openingPlaceholder
     value <- ws *> some (letter <|> oneOf "-_" <|> digit) <* ws
-    char '}' *> ws *> char '}'
+    closingPlaceholder
     return $ P value
+
+placeholder' :: Parser Placeholder
+placeholder' = do
+    char '{'
+    value <- ws *> some (letter <|> oneOf "-_" <|> digit) <* ws
+    char '}'
+    return $ P value
+    
 
 
 -- | Parses an attribute without values
@@ -147,8 +198,6 @@ attributeOnly = do
     name <- some letter
     ws 
     return $ A name
-
-
 
 
 --teststuff:: IO ()

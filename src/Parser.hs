@@ -32,7 +32,9 @@ data Content = CText String | CVar Placeholder
     deriving(Show)
 
 data SingleValue a = Single Element (For a) [HTMLValue a]
-data HTMLValue a = HTML Element (For a) [HTMLValue a] | HContent Content
+    deriving(Show)
+
+data HTMLValue a = HTML [SingleValue a] | HContent Content
     deriving(Show)
 
 
@@ -46,13 +48,12 @@ instance Lift (For a) where
     lift (F x y z) = appE (appE (appE (conE 'F) (lift x)) (lift y)) (mkVar y)
 
 instance Lift (HTMLValue a) where
-    lift (HTML x y z) = appE (appE (appE (conE 'HTML) (lift x)) (lift y)) (lift z)
+    lift (HTML i) = appE (conE 'HTML) (lift $ listOfAs i)
     lift (HContent i) = appE (conE 'HContent) (lift i)
 
 instance Lift (SingleValue a) where
-    lift (Single x y z) = appE (appE (appE (conE 'HTML) (lift x)) (lift y)) (lift z)
+    lift (Single x y z) = appE (appE (appE (conE 'Single) (lift x)) (lift y)) (lift z)
     
-
 instance Lift Content where
     lift (CText i) = appE (conE 'CText) (lift i)
     lift (CVar i) = appE (conE 'CVar) (lift i)
@@ -71,6 +72,15 @@ instance Lift AttributeValue where
 instance Lift Placeholder where
     lift (P i) = appE (conE 'P) (unboundVarE (mkName i))
     
+
+
+
+--listOfAs (a:ax) = [a,a]
+listOfAs (a:ax) = case (a) of
+    (Single x x' x'') -> case x' of 
+        (F y y' y'') -> [a, a]
+        (N) -> [a]
+
 
 mkVar :: String -> ExpQ
 mkVar a = varE $ mkName a
@@ -94,7 +104,7 @@ htmlParser = do
     let elementName = case element of EName a b -> a
     case elementName == closingName of 
         False -> fail "my failure"
-        True -> return $ HTML element N val
+        True -> return $ HTML [Single element N val]
 
 -- html structure or content
 -- parses the content of a html document
