@@ -1,10 +1,21 @@
-module Html where
 
+{-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
+
+module Html where
+import Data.List
+import Language.Haskell.TH 
+import Language.Haskell.TH.Quote
+import Language.Haskell.TH.Syntax 
+import Control.Monad
 import Text.ParserCombinators.Parsec hiding((<|>), many)
 import Control.Applicative
-import Control.Monad
+
 import Helper
 
+data Sim a = P String String [a] 
+    deriving Show
+
+data Cont = Co String | 
 data Html = Element String [Html] | Content String
     deriving Show
 

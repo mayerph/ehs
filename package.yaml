@@ -27,6 +27,7 @@ dependencies:
   - template-haskell
   - syb
   - attoparsec
+  - hint
 
 library:
   source-dirs: src

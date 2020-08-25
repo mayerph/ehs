@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8a312d5ad7fb52613bde77c03b2161332345fcc7c225967c4aa11c37ef532959
+-- hash: 5906d70ae746fc28ba51e7e121aec0ccdb273ba7e7bcc786c31a974097adc0d2
 
 name:           ehs
 version:        0.1.0.0
@@ -31,7 +31,6 @@ library
       Expr.Quote
       Expression
       Helper
-      Html
       Lib
       Parser
       ParseWhile
@@ -46,6 +45,7 @@ library
   build-depends:
       attoparsec
     , base >=4.7 && <5
+    , hint
     , parsec
     , pretty
     , syb
@@ -64,6 +64,7 @@ executable ehs-exe
       attoparsec
     , base >=4.7 && <5
     , ehs
+    , hint
     , parsec
     , pretty
     , syb
@@ -83,6 +84,7 @@ test-suite ehs-test
       attoparsec
     , base >=4.7 && <5
     , ehs
+    , hint
     , parsec
     , pretty
     , syb

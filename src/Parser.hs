@@ -10,34 +10,48 @@ import Control.Monad
 import Text.ParserCombinators.Parsec hiding((<|>), many)
 import Control.Applicative
 import Helper
-    
-
-
-
 
 type AttributeName = String
 data Operator = Eq | Lt | Gt | Le | Ge | Ne
 
 data Placeholder = P String
     deriving(Show)
+
 data AttributeValue = Value String | Placeholder Placeholder
     deriving(Show)
+
 data Attribute =  A AttributeName | Av AttributeName AttributeValue 
     deriving(Show)
+
 -- data Tag = Name | Name' String [Attribute]
+
 data Element = EName String [Attribute]
     deriving(Show)
 
 data Content = CText String | CVar Placeholder
     deriving(Show)
 
-data HTMLValue = HTML Element [HTMLValue] | HContent Content
+data SingleValue a = Single Element (For a) [HTMLValue a]
+data HTMLValue a = HTML Element (For a) [HTMLValue a] | HContent Content
     deriving(Show)
 
 
-instance Lift HTMLValue where
-    lift (HTML x y) = appE (appE (conE 'HTML) (lift x)) (lift y)
+--                   a    wasser  ["Wassermelone, "Pfirsich"]
+data For a = N | F String String [a] 
+    deriving Show
+
+
+instance Lift (For a) where
+    lift (N) = (conE 'N)
+    lift (F x y z) = appE (appE (appE (conE 'F) (lift x)) (lift y)) (mkVar y)
+
+instance Lift (HTMLValue a) where
+    lift (HTML x y z) = appE (appE (appE (conE 'HTML) (lift x)) (lift y)) (lift z)
     lift (HContent i) = appE (conE 'HContent) (lift i)
+
+instance Lift (SingleValue a) where
+    lift (Single x y z) = appE (appE (appE (conE 'HTML) (lift x)) (lift y)) (lift z)
+    
 
 instance Lift Content where
     lift (CText i) = appE (conE 'CText) (lift i)
@@ -58,6 +72,9 @@ instance Lift Placeholder where
     lift (P i) = appE (conE 'P) (unboundVarE (mkName i))
     
 
+mkVar :: String -> ExpQ
+mkVar a = varE $ mkName a
+
 compile str = do 
     case parse htmlContent "" str of 
         Right (a) -> a
@@ -69,7 +86,7 @@ html = QuasiQuoter {quoteExp  = lift . compile,
     quoteDec  = error "no decs for html"
 }
 
-htmlParser :: Parser HTMLValue
+htmlParser :: Parser (HTMLValue a)
 htmlParser = do
     element <- openingtag 
     val <-  htmlContent
@@ -77,11 +94,11 @@ htmlParser = do
     let elementName = case element of EName a b -> a
     case elementName == closingName of 
         False -> fail "my failure"
-        True -> return $ HTML element val
+        True -> return $ HTML element N val
 
 -- html structure or content
 -- parses the content of a html document
-htmlContent :: Parser [HTMLValue]
+htmlContent :: Parser [(HTMLValue a)]
 htmlContent = many $ (try htmlParser) <|> (HContent <$> (try (CVar <$> placeholder) <|> (CText <$> content <* ws)))
 
 

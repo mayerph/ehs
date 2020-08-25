@@ -12,7 +12,9 @@ import Text.ParserCombinators.Parsec hiding((<|>), many)
 import Control.Applicative
 import Helper
 
-data Simple2 a = S2 String | V2 String | Y2 String String [a]
+
+--                                            a    wasser  ["Wassermelone, "Pfirsich"]
+data Simple2 a = S2 String | V2 String | Y2 String String [a] | If String Bool
     deriving Show
 
 
@@ -25,6 +27,7 @@ instance Lift (Simple2 a) where
     lift (S2 i) = appE (conE 'S2) (lift i)
     lift (V2 i) = appE (conE 'V2) (unboundVarE (mkName i))
     lift (Y2 x y z) = appE (appE (appE (conE 'Y2) (lift x)) (lift y)) (listOfAs' y)
+    lift (If x y) = appE (appE (conE 'If) (unboundVarE (mkName x))) (lift y)
 
 instance Lift (MyText2 a) where
     lift (T2 i) = appE (conE 'T2) (lift i)
@@ -49,11 +52,12 @@ listOfAs' :: String -> ExpQ
 listOfAs' a = varE $ mkName a
 
 parseSimple :: Parser (MyText2 a)
-parseSimple = T2 <$> (some (parseText <|> parseVar <|> parseList))
+parseSimple = T2 <$> (some ((try parseText) <|> (try parseVar) <|> (try parseList) <|> (try parseBool)))
 
 parseText :: Parser (Simple2 a)
-parseText = S2 <$> (some (letter <|> (oneOf " ")))
-
+parseText = do 
+    val <- (some (letter <|> (oneOf " ")))
+    return $ S2 val
 
 parseVar :: Parser (Simple2 a)
 parseVar = do
@@ -61,6 +65,13 @@ parseVar = do
     val <- some letter
     char '}'
     return $ V2 val
+
+parseBool :: Parser (Simple2 a)
+parseBool = do
+    char '<'
+    val <- some letter
+    char '>'
+    return $ If val False
 
 
 parseList :: Parser (Simple2 a)
