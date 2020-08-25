@@ -25,18 +25,20 @@ data Attribute =  A AttributeName | Av AttributeName AttributeValue
 
 -- data Tag = Name | Name' String [Attribute]
 
-data Element a = EName String [Attribute] (For a) 
+data Element = EName String [Attribute] 
     deriving(Show)
+
+data ForWrapper a = FW Element (For a)
 
 data Content = CText String | CVar Placeholder
     deriving(Show)
 
-data SingleValue a = Single (Element a) [HTMLValue a]
+data SingleValue a = Single Element [HTMLValue a]
     deriving(Show)
 
     --(For a) 
 
-data HTMLValue a = HTML [SingleValue a] | HContent Content
+data HTMLValue a = HTML [SingleValue a] (For a) | HContent Content
     deriving(Show)
 
 
@@ -50,7 +52,7 @@ instance Lift (For a) where
     lift (F x y z) = appE (appE (appE (conE 'F) (lift x)) (lift y)) (mkVar y)
 
 instance Lift (HTMLValue a) where
-    lift (HTML i) = appE (conE 'HTML) (lift $ mkFor i)
+    lift (HTML x y) = appE (appE (conE 'HTML) (lift x)) (lift y)
     lift (HContent i) = appE (conE 'HContent) (lift i)
 
 instance Lift (SingleValue a) where
@@ -60,8 +62,8 @@ instance Lift Content where
     lift (CText i) = appE (conE 'CText) (lift i)
     lift (CVar i) = appE (conE 'CVar) (lift i)
 
-instance Lift (Element a) where
-    lift (EName x y z) = appE (appE (appE (conE 'EName) (lift x)) (lift y)) (lift z)
+instance Lift (Element) where
+    lift (EName x y) = appE (appE (conE 'EName) (lift x)) (lift y)
 
 instance Lift Attribute where
     lift (A i) = appE (conE 'A) (lift i)
@@ -78,11 +80,14 @@ instance Lift Placeholder where
 
 
 --listOfAs (a:ax) = [a,a]
-mkFor (a:ax) = case (a) of
-    (Single x x') -> case x of 
-        (EName y y' y'') -> case y'' of
-            (N) -> [a]
-            (F y y' y'') -> [a, a]
+--mkFor (a:ax) = case (a) of
+    --(Single x x') -> case x of 
+        --(EName y y' y'') -> case y'' of
+            --(N) -> [a]
+            --(F y y' y'') -> [a, a]
+
+
+              
 
 
 
@@ -102,13 +107,17 @@ html = QuasiQuoter {quoteExp  = lift . compile,
 
 htmlParser :: Parser (HTMLValue a)
 htmlParser = do
-    element <- openingtag 
+    -- wir holen die For Information aus dem opening-tag indem wir einen neuen Datentypen einführen
+    forWr <- openingtag 
+    let element = case forWr of (FW a b) -> a
+    let for = case forWr of (FW a b) -> b
     val <-  htmlContent
     closingName <- closingtag
-    let elementName = case element of EName a b c -> a
+    let elementName = case element of (EName a b) -> a
+
     case elementName == closingName of 
         False -> fail "my failure"
-        True -> return $ HTML [Single element val]
+        True -> return $ HTML [Single element val] for
 
 -- html structure or content
 -- parses the content of a html document
@@ -152,15 +161,15 @@ closingtag = ws *> char '<' *> char '/' *> (some letter) <* ws <* char '>' <* ws
 
 -- | Parses the opening tag of a html element
 -- e.g. <div id="parent">
-openingtag :: Parser (Element a)
+openingtag :: Parser (ForWrapper a)
 openingtag = do
     tagName <- ws *> char '<' *> some letter <* ws
     for <- many parseList
     attr <- many attribute
     char '>'
     case for of
-        (a:[]) -> return $ EName tagName attr a
-        ([]) -> return $ EName tagName attr N
+        (a:[]) -> return $ FW (EName tagName attr) a
+        ([]) -> return $ FW (EName tagName attr) N
         _ -> fail "Multiple for declarations"
     
 
