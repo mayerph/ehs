@@ -33,11 +33,9 @@ data ForWrapper a = FW Element (For a)
 data Content = CText String | CVar Placeholder
     deriving(Show)
 
-data SingleValue a = Single [(Element, [HTMLValue a])] (For a)
+data SingleValue a = Single [(Element, [HTMLValue a])]
     deriving(Show)
 
-
-    --(For a) 
 
 data HTMLValue a = HTML (For a) (SingleValue a)  | HContent Content
     deriving(Show)
@@ -56,10 +54,11 @@ instance Lift (For a) where
 
 instance Lift (HTMLValue a) where
     lift (HTML x y) = appE (appE (conE 'HTML) (lift x)) (mkFor x y)
+    --lift (HTML x y) = appE (appE (conE 'HTML) (lift x)) (lift y)
     lift (HContent i) = appE (conE 'HContent) (lift i)
 
 instance Lift (SingleValue a) where
-    lift (Single x y) = appE (appE (conE 'Single) (lift x)) (lift y)
+    lift (Single x) = appE (conE 'Single) (lift x)
 
 instance Lift (Looper a) where
     lift (LValue x y) = appE (appE (conE 'LValue) (lift x)) (lift y)
@@ -99,14 +98,14 @@ instance Lift Placeholder where
 --createList = $(listE [lift ("hey"::String), lift ("was"::String)])    
 mkFor:: For a -> SingleValue a -> ExpQ
 mkFor (F x y z) s = case s of 
-    (Single a f) -> do
-        let testen = $(listE [lift ("hey"::String), lift ("was"::String)])
-            
-        --let hallo = compE [bindS (varP $ mkName x) (varE $ mkName y), noBindS (appE (varE $ mkName "f") (varE $ mkName x))]
-        let hallo = compE [bindS (varP $ mkName x) (varE $ mkName y), noBindS (appE (varE $ mkName "f") (varE $ mkName x))]
-        let hallo2 = compE [bindS (varP $ mkName x) (varE $ mkName y), noBindS (appE (varE $ mkName "f") (lift a))]
-        let hallo3 = appE (varE $ mkName "concat") (hallo2)
-        (appE (appE (conE 'Single) (hallo3)) (appE (appE (appE (conE 'F) (lift x)) (lift y)) (hallo)))
+    (Single a) -> do
+        let myVars = compE [bindS (varP $ mkName x) (varE $ mkName y), noBindS (appE (varE $ mkName "f") (varE $ mkName x))]
+        let multSingle = compE [bindS (varP $ mkName x) (varE $ mkName y), noBindS (appE (varE $ mkName "f") (lift a))]
+        let single = appE (varE $ mkName "concat") (multSingle)
+        appE (conE 'Single) (single)
+mkFor (N) s = case s of 
+    (Single a) -> lift s
+    
 
          
         --(appE (appE (conE 'Single) (lift a)) (appE (appE (appE (conE 'F) (lift x)) (lift y)) (lift ([]::String))))
@@ -146,7 +145,7 @@ htmlParser = do
 
     case elementName == closingName of 
         False -> fail "my failure"
-        True -> return $ HTML for (Single [(element, val)] N)
+        True -> return $ HTML for (Single [(element, val)])
 
 -- html structure or content
 -- parses the content of a html document
@@ -164,7 +163,7 @@ htmlContent = many $ (try htmlParser) <|> (HContent <$> (try (CVar <$> placehold
   --return (text ++ rest)
  
 content :: Parser String
-content = (ws *> ((some $ noneOf "<,\n")) <* ws)
+content = (ws *> ((some $ noneOf "<,\n{}")) <* ws)
 
 openingPlaceholder :: Parser Char
 openingPlaceholder = char '{' *> ws *> char '{'
