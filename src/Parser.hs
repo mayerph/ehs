@@ -40,9 +40,6 @@ data SingleValue a = Single [(Element, [HTMLValue a])]
 data HTMLValue a = HTML (For a) (SingleValue a)  | HContent Content
     deriving(Show)
 
-data Looper a = LValue (For a) (HTMLValue a) 
-    deriving(Show)
-
 --                   a    wasser  ["Wassermelone, "Pfirsich"]
 data For a = N | F String String [a] 
     deriving Show
@@ -60,9 +57,6 @@ instance Lift (HTMLValue a) where
 instance Lift (SingleValue a) where
     lift (Single x) = appE (conE 'Single) (lift x)
 
-instance Lift (Looper a) where
-    lift (LValue x y) = appE (appE (conE 'LValue) (lift x)) (lift y)
-    
 instance Lift Content where
     lift (CText i) = appE (conE 'CText) (lift i)
     lift (CVar i) = appE (conE 'CVar) (lift i)
@@ -79,7 +73,8 @@ instance Lift AttributeValue where
     lift (Placeholder i) = appE (conE 'Placeholder) (lift i)
 
 instance Lift Placeholder where
-    lift (P i) = appE (conE 'P) (unboundVarE (mkName i))
+    --lift (P i) = appE (conE 'P) (unboundVarE (mkName i))
+    lift (P i) = appE (conE 'P) (varE (mkName i))
     
 
 
@@ -99,7 +94,6 @@ instance Lift Placeholder where
 mkFor:: For a -> SingleValue a -> ExpQ
 mkFor (F x y z) s = case s of 
     (Single a) -> do
-        let myVars = compE [bindS (varP $ mkName x) (varE $ mkName y), noBindS (appE (varE $ mkName "f") (varE $ mkName x))]
         let multSingle = compE [bindS (varP $ mkName x) (varE $ mkName y), noBindS (appE (varE $ mkName "f") (lift a))]
         let single = appE (varE $ mkName "concat") (multSingle)
         appE (conE 'Single) (single)
