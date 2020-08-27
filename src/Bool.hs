@@ -16,15 +16,18 @@ import Control.Applicative
 import Helper
 
 data BoolOp = Eq | Lt | Gt | Le | Ge | Ne
-    deriving Show
-
+    deriving (Show)
 
 
 data Placeholder a = Null | Value a
-    deriving Show
+    deriving (Show, Eq)
 
-data BoolExpr a = BExpr String BoolOp String (Placeholder a)
-    deriving Show
+
+
+
+data BoolExpr a = BExpr String BoolOp String (Placeholder a) (Placeholder a)
+    deriving (Show)
+
 
 instance Lift BoolOp where
     lift (Eq) = conE 'Eq
@@ -35,18 +38,11 @@ instance Lift BoolOp where
     lift (Ne) = conE 'Ne
 
 instance Lift (BoolExpr a) where
-    lift (BExpr x y z i) = appE (appE (appE (appE (conE 'BExpr) (lift x)) (lift y)) (lift z)) (appE (conE 'Value) (mkVar z))
+    lift (BExpr x y z i j) = appE (appE (appE (appE (appE (conE 'BExpr) (lift x)) (lift y)) (lift z)) (appE (conE 'Value) (mkVar x))) (appE (conE 'Value) (mkVar z))
 
 instance Lift a => Lift (Placeholder a) where
     lift (Null) = (conE 'Null)
     lift (Value i) = appE (conE 'Value) (lift i)
-
-
-
-
-
- 
-
 
 
 mkVar :: String -> ExpQ
@@ -64,6 +60,7 @@ bool = QuasiQuoter {quoteExp  = lift . compile,
 }
 
 
+
 -- parse boolExpr "" "myVar == myVar2"
 boolExpr :: Parser (BoolExpr a)
 boolExpr = do
@@ -72,7 +69,7 @@ boolExpr = do
     op <- boolOp 
     ws
     var2 <- some (letter <|> digit)
-    return $ BExpr var1 op var2 Null
+    return $ BExpr var1 op var2 Null Null
 
 
 boolOp :: Parser BoolOp
@@ -84,3 +81,6 @@ opEq = do
     string "=="
     return Eq
 
+eval :: (Eq a) => BoolExpr a -> Bool
+eval (BExpr _ eq _ x y) = x == y
+eval _ = False
