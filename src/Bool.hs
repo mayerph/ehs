@@ -20,9 +20,7 @@ data BoolOp = Eq | Lt | Gt | Le | Ge | Ne
 
 
 data Placeholder a = Null | Value a
-    deriving (Show, Eq)
-
-
+    deriving (Show, Eq, Ord)
 
 
 data BoolExpr a = BExpr String BoolOp String (Placeholder a) (Placeholder a)
@@ -73,14 +71,20 @@ boolExpr = do
 
 
 boolOp :: Parser BoolOp
-boolOp = opEq
+boolOp = string "==" *> pure Eq 
+    <|>  string "<" *> pure Lt
+    <|>  string ">" *> pure Gt
+    <|>  string "<=" *> pure Le
+    <|>  string ">=" *> pure Ge
+    <|>  string "!=" *> pure Ne
     
 
-opEq :: Parser BoolOp 
-opEq = do
-    string "=="
-    return Eq
 
-eval :: (Eq a) => BoolExpr a -> Bool
-eval (BExpr _ eq _ x y) = x == y
+eval :: (Eq a, Ord a) => BoolExpr a -> Bool
+eval (BExpr _ Eq _ x y) = x == y
+eval (BExpr _ Lt _ x y) = x < y
+eval (BExpr _ Gt _ x y) = x > y
+eval (BExpr _ Le _ x y) = x <= y
+eval (BExpr _ Ge _ x y) = x >= y
+eval (BExpr _ Ne _ x y) = x /= y
 eval _ = False
