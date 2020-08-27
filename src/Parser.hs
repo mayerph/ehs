@@ -12,7 +12,7 @@ import Control.Applicative
 import Helper
 
 type AttributeName = String
-data Operator = Eq | Lt | Gt | Le | Ge | Ne
+
 
 data Placeholder = P String
     deriving(Show)

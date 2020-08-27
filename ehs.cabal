@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5906d70ae746fc28ba51e7e121aec0ccdb273ba7e7bcc786c31a974097adc0d2
+-- hash: 96083eadb8157e8edd25e9ffd7efb1503d026def764e5d3571272b7490036ca3
 
 name:           ehs
 version:        0.1.0.0
@@ -27,6 +27,7 @@ source-repository head
 
 library
   exposed-modules:
+      Bool
       Expr
       Expr.Quote
       Expression
@@ -34,8 +35,10 @@ library
       Lib
       Parser
       ParseWhile
+      Satisfy
       Simple
       Template
+      TestBool
       TestParser
       TestSimple
   other-modules:
