@@ -69,7 +69,7 @@ instance Lift (Attribute a) where
 
 instance Lift (AttributeValue a) where
     lift (Value i) = appE (conE 'Value) (lift i)
-    lift (Placeholder x y) = appE (appE (conE 'Placeholder) (lift x)) (appE (conE 'P) (mkVar x))
+    lift (Placeholder x y) = appE (appE (conE 'Placeholder) (lift x)) (appE (conE 'ValueA) (mkVar x))
 
 instance Lift a => Lift (Placeholder a) where
     --lift (P i) = appE (conE 'P) (unboundVarE (mkName i))

@@ -5,7 +5,7 @@ import Html
 
 test = "Wassermelone"
 
-myId = "was ist los2"
+myId = "1"
 test2 = ["Wassermelone", "salamander"]
 
 --wasser = ["4", "7"]
