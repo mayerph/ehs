@@ -217,10 +217,10 @@ openingtag = do
 
 parseList :: Parser (For a)
 parseList = do
-    char '['
-    a <- some letter
-    string "<-"
-    b <- some letter
+    char '[' <* ws
+    a <- some letter <* ws
+    string "<-" <* ws
+    b <- some letter <* ws
     char ']'
     return $ F a b []
 
