@@ -22,6 +22,7 @@ import Helper
 
 type AttributeName = String
 
+-- test
 data Placeholder a = Null | ValueB Bool | ValueA a | P String
     deriving (Show, Eq, Ord)
 
