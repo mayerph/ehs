@@ -24,30 +24,61 @@ type AttributeName = String
 
 -- test
 data Placeholder a = Null | ValueB Bool | ValueA a | P String
-    deriving (Show, Eq, Ord)
+    deriving (Eq, Ord)
 
+instance Show a => Show (Placeholder a) where
+    show (Null) = ""
+    show (ValueB x) = ""
+    show (ValueA x) = show x
+    show (P x) = show x
+      
 data AttributeValue a = Value String | Placeholder String (Placeholder a)
-    deriving(Show)
+instance Show a => Show (AttributeValue a) where
+    show (Value a) = show a
+    show (Placeholder a b) = show b
 
 data Attribute a =  A AttributeName | Av AttributeName (AttributeValue a) | If (Expr a)
-    deriving(Show)
+instance Show a => Show (Attribute a) where
+    show (A x) = id x
+    show (Av x y) = " " ++ id x ++ "=" ++ show y
+    show (If x) = ""
 
 -- data Tag = Name | Name' String [Attribute]
 
 data Element a = EName String [Attribute a] 
-    deriving(Show)
+instance Show a => Show (Element a) where
+    show (EName a b) = id a ++ list_to_string b
 
 data ForWrapper a = FW (Element a) (For a)
 
+
+
 data Content a = CText String | CVar String (Placeholder a)
-    deriving(Show)
+instance Show a => Show (Content a) where
+    show (CText a) = id a
+
 
 data SingleValue a = Single [(Element a, [HTMLValue a])]
-    deriving(Show)
+instance (Show a, Ord a) => Show (SingleValue a) where
+    show (Single x) = concat ["<" ++ show x1 ++ ">" ++ (list_to_string $ x2) ++ "</" ++ id (getElemName x1) ++ ">"  | (x1, x2) <- x,  eval x1]
+
+
+getElemName :: (Element a) -> String
+getElemName (EName a _)  = a
+
+eval :: Ord a => (Element a) -> Bool
+eval (EName a b) = all (\x -> x) (map (\x -> 
+    case x of  
+        If a -> evalSatis a
+        _ -> True
+    ) b)
 
 
 data HTMLValue a = HTML (For a) (SingleValue a)  | HContent (Content a)
-    deriving(Show)
+instance (Show a, Ord a) => Show (HTMLValue a) where 
+    show (HTML _ x) = show x
+    show (HContent x) = show x
+
 
 --                   a    wasser  ["Wassermelone, "Pfirsich"]
 data For a = N | F String String [a] 
@@ -230,7 +261,7 @@ parseList = do
 -- Parses an attribute with values or without values
 attribute :: Parser (Attribute a)
 --attribute = try hIf <|> attributeWithValue <|> attributeOnly
-attribute = (try hIf) <|> attributeOnly
+attribute = (try hIf) <|> attributeWithValue <|> attributeOnly
 
 hIf :: Parser (Attribute a)
 hIf = do
@@ -310,12 +341,12 @@ variable = do
 
 
 
---evalSatis :: (Expr a) -> Bool
---evalSatis (Or e1 e2) = (evalSatis e1 || evalSatis e2)
---evalSatis (And e1 e2) = (evalSatis e1 && evalSatis e2)
---evalSatis (Var a) = evalBoolean a
---evalSatis (SubExpr a) = evalSatis a
---evalSatis (Not e) = not (evalSatis e)
+evalSatis :: Ord a => (Expr a) -> Bool
+evalSatis (Or e1 e2) = (evalSatis e1 || evalSatis e2)
+evalSatis (And e1 e2) = (evalSatis e1 && evalSatis e2)
+evalSatis (Var a) = evalBoolean a
+evalSatis (SubExpr a) = evalSatis a
+evalSatis (Not e) = not (evalSatis e)
 
 boolExpr :: Parser (BoolExpr a)
 boolExpr = (try boolExprM) <|> (try boolExprS)
