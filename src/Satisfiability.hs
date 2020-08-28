@@ -21,7 +21,7 @@ import Language.Haskell.TH.Syntax
 data BoolOp = Eq | Lt | Gt | Le | Ge | Ne
     deriving (Show, Eq, Ord)
 
-data BoolExpr a = BExpr String BoolOp String (Placeholder a) (Placeholder a)
+data BoolExpr a = BExpr String BoolOp String (Placeholder a) (Placeholder a) | BExprS String (Placeholder a)
     deriving (Show, Eq, Ord)
 
 data Placeholder a = Null | ValueB Bool | Value a
@@ -52,6 +52,7 @@ instance Lift BoolOp where
 
 instance Lift (BoolExpr a) where
     lift (BExpr x y z i j) = appE (appE (appE (appE (appE (conE 'BExpr) (lift x)) (lift y)) (lift z)) (appE (conE 'Value) (mkVar x))) (appE (conE 'Value) (mkVar z))
+    lift (BExprS x y) = appE (appE (conE 'BExprS) (lift x)) (appE (conE 'ValueB) (mkVar x))
 
 mkVar :: String -> ExpQ
 mkVar a = varE $ mkName a
@@ -98,7 +99,10 @@ opString :: Parser String
 opString = string "AND"
 
 boolExpr :: Parser (BoolExpr a)
-boolExpr = do
+boolExpr = (try boolExprM) <|> (try boolExprS)
+
+boolExprM :: Parser (BoolExpr a)
+boolExprM = do
     --notFollowedBy opString
     var1 <- some (letter <|> digit)
     ws
@@ -107,6 +111,11 @@ boolExpr = do
     var2 <- some (letter <|> digit)
     ws
     return $ BExpr var1 op var2 Null Null
+
+boolExprS :: Parser (BoolExpr a)
+boolExprS = do 
+    a <- ((some (letter)) <* ws) <?> "variable"
+    return $ BExprS a Null
 
 
 boolOp :: Parser BoolOp

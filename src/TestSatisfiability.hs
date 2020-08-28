@@ -21,7 +21,7 @@ e = False
 myVar3 = 1
 myVar4 = 2
 --testParser = [html|<div class="test" id="{myId}">{{ myId }} hi geht heute {{ myId }}</div>|]
-testSatis = [satis|myVar3 > myVar4 AND myVar3 > myVar4 |]
+testSatis = [satis|myVar3 > myVar4 AND a |]
 --testSatisFunc = eval testSatis
 --testParser = [html|<div><span [a<-wasser]>{{test}} Hello World {{test}}</span></div>|]
 
