@@ -16,7 +16,7 @@ myVar2 = 2
 
 testBool = [bool|myVar1 > myVar2|]
 
-testBoolFunc = eval testBool
+testBoolFunc = evalBool testBool
 --testParser = [html|<div [a<-wasser]><span [b<-wasser]>Hello World</span></div>|]
 --testParser = [html|<div><span [a<-wasser]>{{test}} Hello World {{test}}</span></div>|]
 

@@ -11,6 +11,7 @@ import Control.Applicative hiding ((<|>))
 import Control.Monad
 
 
+
 import Language.Haskell.TH 
 import Language.Haskell.TH.Quote
 import Language.Haskell.TH.Syntax 
@@ -70,3 +71,4 @@ eval (And e1 e2) = (eval e1 && eval e2)
 eval (Var a (Value b)) = b
 eval (SubExpr a) = eval a
 eval (Not e) = not (eval e)
+

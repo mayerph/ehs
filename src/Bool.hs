@@ -2,7 +2,7 @@
 {-# Language FlexibleContexts #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE OverloadedStrings #-}
-module Bool where 
+module Bool (evalBool, bool) where
 
 import Data.List
 import Language.Haskell.TH 
@@ -80,11 +80,11 @@ boolOp = string "==" *> pure Eq
     
 
 
-eval :: (Eq a, Ord a) => BoolExpr a -> Bool
-eval (BExpr _ Eq _ x y) = x == y
-eval (BExpr _ Lt _ x y) = x < y
-eval (BExpr _ Gt _ x y) = x > y
-eval (BExpr _ Le _ x y) = x <= y
-eval (BExpr _ Ge _ x y) = x >= y
-eval (BExpr _ Ne _ x y) = x /= y
-eval _ = False
+evalBool :: (Eq a, Ord a) => BoolExpr a -> Bool
+evalBool (BExpr _ Eq _ x y) = x == y
+evalBool (BExpr _ Lt _ x y) = x < y
+evalBool (BExpr _ Gt _ x y) = x > y
+evalBool (BExpr _ Le _ x y) = x <= y
+evalBool (BExpr _ Ge _ x y) = x >= y
+evalBool (BExpr _ Ne _ x y) = x /= y
+evalBool _ = False
