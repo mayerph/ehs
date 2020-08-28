@@ -14,7 +14,7 @@ wasser = [[3,2], [4,7]]
 myVar1 = 1
 myVar2 = 2
 
-testBool = [bool|myVar1 > myVar2|]
+testBool = [bool|myVar1 gt myVar2|]
 
 testBoolFunc = evalBool testBool
 --testParser = [html|<div [a<-wasser]><span [b<-wasser]>Hello World</span></div>|]

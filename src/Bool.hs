@@ -72,10 +72,10 @@ boolExpr = do
 
 boolOp :: Parser BoolOp
 boolOp = string "==" *> pure Eq 
-    <|>  string "<" *> pure Lt
-    <|>  string ">" *> pure Gt
-    <|>  string "<=" *> pure Le
-    <|>  string ">=" *> pure Ge
+    <|>  string "lt" *> pure Lt
+    <|>  string "gt" *> pure Gt
+    <|>  string "le" *> pure Le
+    <|>  string "ge" *> pure Ge
     <|>  string "!=" *> pure Ne
     
 
