@@ -1,7 +1,8 @@
 {-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
 
 module Html_Test where
-import Html
+import Html_Parser
+import Html_Data
 import Data
 
 test = "True"
@@ -36,7 +37,8 @@ myArray = T_List[T_List[T_Int 1, T_Int 2], T_List[T_Int 6, T_Int 8]]
 gerta = T_Int 2
 frieda = T_Int 7
 
-testHtml = [html|<div [a<-myArray]><span [b<-a]><div hIf="b > gerta AND b < frieda">{{ b }} Hello World</div></span></div>|]
+testHtml = [html|<div>hello world</div>|]
+--testHtml = [html|<div [a<-myArray]><span [b<-a]><div hIf="b > gerta">{{ b }} Hello World</div></span></div>|]
 --testHtml = [html|<div class="hello" hIf="myVar5 > myVar6"><span>Hello World</span></div>|]
 
 
