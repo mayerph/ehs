@@ -15,16 +15,16 @@ import Text.ParserCombinators.Parsec hiding((<|>), many)
 import Text.ParserCombinators.Parsec.Token hiding (parens)
 import Text.ParserCombinators.Parsec.Expr as ParsecExpr
 
-import Bool
+
 import Helper
-import HelperData
+import Data
 
 
 
 type AttributeName = String
 
 -- test
-data Placeholder a = Null | ValueB Bool | ValueA Wrapper | P String
+data Placeholder a = Null | ValueB Bool | ValueA Template | P String
     deriving (Eq, Ord)
 
 instance Show a => Show (Placeholder a) where
@@ -88,7 +88,7 @@ instance (Show a, Ord a) => Show (HTMLValue a) where
 
 
 --                   a    wasser  ["Wassermelone, "Pfirsich"]
-data For a = N | F String String Wrapper
+data For a = N | F String String Template
     deriving Show
 
 -- #################################################################################################
@@ -171,7 +171,7 @@ mkFor (N) s = case s of
     (Single a) -> lift s
 
 unpack a = case a of 
-    Wrapper_L list -> list
+    T_List list -> list
     _ -> []
     
 

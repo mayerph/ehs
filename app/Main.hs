@@ -1,7 +1,6 @@
 {-# LANGUAGE InstanceSigs #-}
 module Main where
 
-import Parser
 import Text.ParserCombinators.Parsec hiding((<|>), many)
 import Control.Applicative
 import Control.Monad

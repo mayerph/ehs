@@ -1,12 +1,12 @@
 {-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
 
-module TestHtml where
+module Html_Test where
 import Html
-import HelperData
+import Data
 
 test = "True"
-
-myId = "1"
+test4 = T_String "hey"
+myId = T_Int 1
 test2 = ["Wassermelone", "salamander"]
 
 --wasser = ["4", "7"]
@@ -28,15 +28,16 @@ myVarA = "A"
 myVarB = "A"
 
 
-myVar5 = IntegerWrapper 1
-myVar6 = IntegerWrapper 2
+myVar5 = T_Int 1
+myVar6 = T_Int 0
 
-myArray = Wrapper_L[Wrapper_L[IntegerWrapper 1, IntegerWrapper 2], Wrapper_L[IntegerWrapper 1, IntegerWrapper 2]]
+myArray = T_List[T_List[T_Int 1, T_Int 2], T_List[T_Int 6, T_Int 8]]
 
+gerta = T_Int 2
+frieda = T_Int 7
 
-
-testHtml = [html|<div [a<-myArray]><span [b<-a]>Hello World</span></div>|]
---testHtml = [html|<div class="hello" hIf="myVar5 < myVar6"><span>Hello World</span></div>|]
+testHtml = [html|<div [a<-myArray]><span [b<-a]><div hIf="b > gerta AND b < frieda">{{ b }} Hello World</div></span></div>|]
+--testHtml = [html|<div class="hello" hIf="myVar5 > myVar6"><span>Hello World</span></div>|]
 
 
 --testParser = [html|<div class="test" id="{myId}">{{ myId }} hi geht heute {{ myId }}</div>|]
