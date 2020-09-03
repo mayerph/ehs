@@ -17,20 +17,21 @@ import Text.ParserCombinators.Parsec.Expr as ParsecExpr
 
 import Bool
 import Helper
+import HelperData
 
 
 
 type AttributeName = String
 
 -- test
-data Placeholder a = Null | ValueB Bool | ValueA a | P String
+data Placeholder a = Null | ValueB Bool | ValueA Wrapper | P String
     deriving (Eq, Ord)
 
 instance Show a => Show (Placeholder a) where
     show (Null) = ""
     show (ValueB x) = ""
     show (ValueA x) = show x
-    show (P x) = show x
+    show (P x) = id x
       
 data AttributeValue a = Value String | Placeholder String (Placeholder a)
 instance Show a => Show (AttributeValue a) where
@@ -47,7 +48,12 @@ instance Show a => Show (Attribute a) where
 
 data Element a = EName String [Attribute a] 
 instance Show a => Show (Element a) where
-    show (EName a b) = id a ++ list_to_string b
+    show (EName a b) = id a ++ (list_to_string $ filter (filterAttribute) b)
+
+filterAttribute :: (Attribute a) -> Bool
+filterAttribute (A x) = True
+filterAttribute (Av x y) = True
+filterAttribute (If x) = False
 
 data ForWrapper a = FW (Element a) (For a)
 
@@ -56,6 +62,7 @@ data ForWrapper a = FW (Element a) (For a)
 data Content a = CText String | CVar String (Placeholder a)
 instance Show a => Show (Content a) where
     show (CText a) = id a
+    show (CVar a b) = show b
 
 
 data SingleValue a = Single [(Element a, [HTMLValue a])]
@@ -81,7 +88,7 @@ instance (Show a, Ord a) => Show (HTMLValue a) where
 
 
 --                   a    wasser  ["Wassermelone, "Pfirsich"]
-data For a = N | F String String [a] 
+data For a = N | F String String Wrapper
     deriving Show
 
 -- #################################################################################################
@@ -96,6 +103,7 @@ data Expr a = Not (Expr a) | And (Expr a) (Expr a) | Or (Expr a) (Expr a) | Var 
 
 -- #################################################################################################    
 
+
 instance Lift (For a) where
     lift (N) = (conE 'N)
     lift (F x y z) = appE (appE (appE (conE 'F) (lift x)) (lift y)) (mkVar y)
@@ -109,8 +117,9 @@ instance Lift (SingleValue a) where
 
 instance Lift (Content a) where
     lift (CText i) = appE (conE 'CText) (lift i)
-    lift (CVar x y) = appE (appE (conE 'CVar) (lift x)) (appE (conE 'ValueA) (mkVar x))
+    lift (CVar x y) = appE (appE (conE 'CVar) (lift x)) (appE (conE 'P) (newShow $ mkVar x))
 
+newShow x = appE (varE $ mkName "show") x
 instance Lift (Element a) where
     lift (EName x y) = appE (appE (conE 'EName) (lift x)) (lift y)
 
@@ -153,11 +162,17 @@ instance Lift (BoolExpr a) where
 mkFor:: For a -> SingleValue a -> ExpQ
 mkFor (F x y z) s = case s of 
     (Single a) -> do
-        let multSingle = compE [bindS (varP $ mkName x) (varE $ mkName y), noBindS (appE (varE $ mkName "f") (lift a))]
+        let multSingle = compE [bindS (varP $ mkName x) (appE unpack_ (varE $ mkName y)), noBindS (appE (varE $ mkName "f") (lift a))]
         let single = appE (varE $ mkName "concat") (multSingle)
         appE (conE 'Single) (single)
+        where 
+            unpack_ = varE $ mkName "unpack"
 mkFor (N) s = case s of 
     (Single a) -> lift s
+
+unpack a = case a of 
+    Wrapper_L list -> list
+    _ -> []
     
 
 
@@ -254,7 +269,7 @@ parseList = do
     string "<-" <* ws
     b <- some letter <* ws
     char ']'
-    return $ F a b []
+    return $ F a b Empty
 
   
 -- | Parses a single attribute of html tag

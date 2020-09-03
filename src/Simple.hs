@@ -7,6 +7,7 @@ import Language.Haskell.TH
 import Language.Haskell.TH.Quote
 import Language.Haskell.TH.Syntax 
 import Control.Monad
+import Simple2
 
 import Text.ParserCombinators.Parsec hiding((<|>), many)
 import Control.Applicative
@@ -21,6 +22,8 @@ data Simple2 a = S2 String | V2 String | Y2 String String [a] | If String Bool
 data MyText2 a = T2 [Simple2 a] 
     deriving Show   
 
+
+data HansDampf = Dampf String
 
 
 instance Lift (Simple2 a) where
@@ -52,19 +55,23 @@ listOfAs' :: String -> ExpQ
 listOfAs' a = varE $ mkName a
 
 parseSimple :: Parser (MyText2 a)
-parseSimple = T2 <$> (some ((try parseText) <|> (try parseVar) <|> (try parseList) <|> (try parseBool)))
+parseSimple = T2 <$> (some ((try parseText) <|> (try parseList) <|> (try parseBool)))
 
 parseText :: Parser (Simple2 a)
 parseText = do 
     val <- (some (letter <|> (oneOf " ")))
     return $ S2 val
 
-parseVar :: Parser (Simple2 a)
+hallo = "welt"
+parseVar :: Parser HansDampf
 parseVar = do
-    char '{'
     val <- some letter
-    char '}'
-    return $ V2 val
+    
+  
+    return $ Dampf val
+
+
+
 
 parseBool :: Parser (Simple2 a)
 parseBool = do
