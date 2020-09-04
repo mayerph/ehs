@@ -1,4 +1,7 @@
-{-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
+{-# LANGUAGE TemplateHaskell, QuasiQuotes #-} 
+{-# Language FlexibleContexts #-}
+{-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Html_Test where
 import Html_Parser
@@ -37,6 +40,7 @@ myArray = T_List[T_List[T_Int 1, T_Int 2], T_List[T_Int 6, T_Int 8]]
 gerta = T_Int 2
 frieda = T_Int 7
 
+testHtml :: [HTMLValue a]
 testHtml = [html|<div>hello world</div>|]
 --testHtml = [html|<div [a<-myArray]><span [b<-a]><div hIf="b > gerta">{{ b }} Hello World</div></span></div>|]
 --testHtml = [html|<div class="hello" hIf="myVar5 > myVar6"><span>Hello World</span></div>|]
@@ -52,5 +56,9 @@ testHtml = [html|<div>hello world</div>|]
 --testHtml = [html|<div hIf="myVar3 > myVar4 AND z">Hello World</div>|]
 --testParser = [html|<div><span [a<-wasser]>{{test}} Hello World {{test}}</span></div>|]
 
-f a = a
 
+hello :: IO ()
+hello = undefined
+
+testHtml2 :: String
+testHtml2 = show [html|<div>hello world</div>|]

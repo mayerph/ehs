@@ -31,6 +31,9 @@ html = QuasiQuoter {quoteExp  = lift . compile,
     quoteDec  = error "no decs for html"
 }
 
+myStringParser :: Parser String
+myStringParser = some letter
+
 htmlParser :: Parser (HTMLValue a)
 htmlParser = do
     -- wir holen die For Information aus dem opening-tag indem wir einen neuen Datentypen einführen
