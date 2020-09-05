@@ -7,11 +7,12 @@ module Main where
 
 
 import Ehs
+import Data
 
 main :: IO ()
 main = print "Hello World"
 
-
+a = T_String "wie gehts"
 
 testHtmlDoc :: [HTMLValue]
-testHtmlDoc = [html|<div>hi</div>|]
+testHtmlDoc = [html|<div>hi{{ a }} sonst so</div>|]

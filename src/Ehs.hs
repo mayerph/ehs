@@ -14,6 +14,10 @@ initData :: String -> IO()
 initData loc = do
     writeFile (loc ++ "Data.hs") templateData
 
+renderHtml_test :: String -> [HTMLValue] -> IO()
+renderHtml_test file content = do
+    writeFile file (list_to_string content)
+
 
 templateData = "{-# LANGUAGE TemplateHaskell, QuasiQuotes #-}\n\
 \{-# Language FlexibleContexts #-}\n\
@@ -29,19 +33,18 @@ templateData = "{-# LANGUAGE TemplateHaskell, QuasiQuotes #-}\n\
 \import Control.Applicative\n\
 \\n\
 \data Template = \n\
-\\t    Empty\n\
-\\t|   T_List [Template]\n\
-\\t|   T_String String\n\
-\\t|   T_Int Int\n\
-\\n\
-\\tderiving (Eq, Ord)\n\
+\      Empty\n\
+\  |   T_List [Template]\n\
+\  |   T_String String\n\
+\  |   T_Int Int\n\
+\  deriving (Eq, Ord)\n\
 \\n\
 \instance Lift Template where\n\
-\\tlift (T_String i) = appE (conE 'T_String) (lift i)\n\
-\\tlift (T_Int i) = appE (conE 'T_Int) (lift i)\n\
+\  lift (T_String i) = appE (conE 'T_String) (lift i)\n\
+\  lift (T_Int i) = appE (conE 'T_Int) (lift i)\n\
 \\n\
 \instance Show Template where\n\
-\\tshow (Empty) = \"Empty\"\n\
-\\tshow (T_String i) = id i\n\
-\\tshow (T_Int i) = show i\n\
-\\tshow (T_List i) = show i"
+\  show (Empty) = \"Empty\"\n\
+\  show (T_String i) = id i\n\
+\  show (T_Int i) = show i\n\
+\  show (T_List i) = show i"

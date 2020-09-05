@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ccca2f9fc9b4564dba09fee7406e3b03821c39c5806c5d626962155c3d0ed6ae
+-- hash: b09b8fa5a103dddc3873adfa2e71ebfed4df75c80b423e539fdc3e173180a007
 
 name:           schedule
 version:        0.1.0.0
@@ -27,6 +27,7 @@ source-repository head
 
 library
   exposed-modules:
+      Data
       Lib
   other-modules:
       Paths_schedule
@@ -35,6 +36,7 @@ library
   build-depends:
       base >=4.7 && <5
     , ehs
+    , template-haskell
   default-language: Haskell2010
 
 executable schedule-exe
@@ -48,6 +50,7 @@ executable schedule-exe
       base >=4.7 && <5
     , ehs
     , schedule
+    , template-haskell
   default-language: Haskell2010
 
 test-suite schedule-test
@@ -62,4 +65,5 @@ test-suite schedule-test
       base >=4.7 && <5
     , ehs
     , schedule
+    , template-haskell
   default-language: Haskell2010
