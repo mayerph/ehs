@@ -11,6 +11,5 @@ import Ehs
 main :: IO ()
 main = print "Hello World"
 
-
 testHtmlDoc :: [HTMLValue]
 testHtmlDoc = [html|<div>hi</div>|]

@@ -12,12 +12,12 @@ packages:
     version: 0.1.0.0
     git: https://github.com/mayerph/ehs.git
     pantry-tree:
-      size: 1985
-      sha256: 5e1a43cd6348782c9bcaac5baa0a7ad40d09e915fb73320334e1b8c23e5ffe58
-    commit: db43629ad40bb297c6b8414036e23fd88ecd5280
+      size: 1986
+      sha256: 6a4d4bfe9fb42dc3395a69a65d4883f95d22cbce47f171137df5e0628e8fa265
+    commit: 0e9692aa399dfad28b01f3338f838eda368efce5
   original:
     git: https://github.com/mayerph/ehs.git
-    commit: db43629ad40bb297c6b8414036e23fd88ecd5280
+    commit: 0e9692aa399dfad28b01f3338f838eda368efce5
 snapshots:
 - completed:
     size: 532377

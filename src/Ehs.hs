@@ -3,16 +3,16 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Ehs(module Html_Parser, module Html_Data, module Data, module Helper) where
+module Ehs(module Html_Parser, module Html_Data, module Helper) where
 
 import Html_Parser
 import Html_Data
 import Data
 import Helper
 
-init :: String -> IO()
-init loc = do
-    writeFile loc templateData
+initData :: String -> IO()
+initData loc = do
+    writeFile (loc ++ "Data.hs") templateData
 
 
 templateData = "{-# LANGUAGE TemplateHaskell, QuasiQuotes #-}\
