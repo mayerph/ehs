@@ -3,7 +3,7 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Ehs where
+module Ehs(module Html_Parser, module Html_Data, module Data, module Helper) where
 
 import Html_Parser
 import Html_Data

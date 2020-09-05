@@ -6,18 +6,18 @@
 packages:
 - completed:
     cabal-file:
-      size: 1816
-      sha256: 048e735a5058dfc16220d3ac3155bdf0c5e3c34b7d95b9f11ee260d679befed6
+      size: 1826
+      sha256: c9471ec7459e96377cace9f8b3ef0cad77c402b88e74e0fbf5d9efc50cea25dd
     name: ehs
     version: 0.1.0.0
     git: https://github.com/mayerph/ehs.git
     pantry-tree:
-      size: 1123
-      sha256: ef903713f1b69670b6b72ba46bdbc8fcc63bf4ac5cdb7b5c7e5cb1e7b04b6112
-    commit: 10473e9b2898ff31e1c9c338690e0aa3da7df28d
+      size: 1984
+      sha256: 8e33cc854ffa7875b9ff451bd06944cee70664a3cc6e76096a420cbe245dbbea
+    commit: 78874f93a22642721e0d114597c1c6117d8c718a
   original:
     git: https://github.com/mayerph/ehs.git
-    commit: 10473e9b2898ff31e1c9c338690e0aa3da7df28d
+    commit: 78874f93a22642721e0d114597c1c6117d8c718a
 snapshots:
 - completed:
     size: 532377

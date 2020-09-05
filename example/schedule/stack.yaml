@@ -43,7 +43,7 @@ packages:
 
 extra-deps:
   - git: https://github.com/mayerph/ehs.git
-    commit: 10473e9b2898ff31e1c9c338690e0aa3da7df28d
+    commit: 78874f93a22642721e0d114597c1c6117d8c718a
 # Override default flag values for local packages and extra-deps
 # flags: {}
 
