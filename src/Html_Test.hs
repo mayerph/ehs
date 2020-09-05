@@ -7,6 +7,7 @@ module Html_Test where
 import Html_Parser
 import Html_Data
 import Data
+import Helper
 
 test = "True"
 test4 = T_String "hey"
@@ -40,9 +41,9 @@ myArray = T_List[T_List[T_Int 1, T_Int 2], T_List[T_Int 6, T_Int 8]]
 gerta = T_Int 2
 frieda = T_Int 7
 
-testHtml :: [HTMLValue a]
-testHtml = [html|<div>hello world</div>|]
---testHtml = [html|<div [a<-myArray]><span [b<-a]><div hIf="b > gerta">{{ b }} Hello World</div></span></div>|]
+testHtml :: [HTMLValue]
+--testHtml = [html|<div>hello world</div>|]
+testHtml = [html|<div [a<-myArray]><span [b<-a]><div hIf="b > gerta">{{ b }} Hello World</div></span></div>|]
 --testHtml = [html|<div class="hello" hIf="myVar5 > myVar6"><span>Hello World</span></div>|]
 
 
@@ -57,8 +58,8 @@ testHtml = [html|<div>hello world</div>|]
 --testParser = [html|<div><span [a<-wasser]>{{test}} Hello World {{test}}</span></div>|]
 
 
-hello :: IO ()
-hello = undefined
 
-testHtml2 :: String
-testHtml2 = show [html|<div>hello world</div>|]
+renderHtml :: String -> IO()
+renderHtml file = do
+    writeFile file (list_to_string [html|<div [a<-myArray]><span [b<-a]><div hIf="b > gerta">{{ b }} Hello World</div></span></div>|])
+

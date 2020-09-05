@@ -34,7 +34,7 @@ html = QuasiQuoter {quoteExp  = lift . compile,
 myStringParser :: Parser String
 myStringParser = some letter
 
-htmlParser :: Parser (HTMLValue a)
+htmlParser :: Parser HTMLValue
 htmlParser = do
     -- wir holen die For Information aus dem opening-tag indem wir einen neuen Datentypen einführen
     forWr <- openingtag 
@@ -50,10 +50,10 @@ htmlParser = do
 
 -- html structure or content
 -- parses the content of a html document
-htmlContent :: Parser [(HTMLValue a)]
+htmlContent :: Parser [HTMLValue]
 htmlContent = many $ (try htmlParser) <|> (HContent <$> (try (contentPlaceholder) <|> (CText <$> content <* ws)))
 
-contentPlaceholder :: Parser (Content a)
+contentPlaceholder :: Parser Content
 contentPlaceholder = do
     p <- placeholder
     return $ CVar p Null
@@ -86,7 +86,7 @@ closingtag = ws *> char '<' *> char '/' *> (some letter) <* ws <* char '>' <* ws
 
 -- | Parses the opening tag of a html element
 -- e.g. <div id="parent">
-openingtag :: Parser (ForWrapper a)
+openingtag :: Parser ForWrapper
 openingtag = do
     tagName <- ws *> char '<' *> some letter <* ws
     for <- many parseList
@@ -97,7 +97,7 @@ openingtag = do
         ([]) -> return $ FW (EName tagName attr) N
         _ -> fail "Multiple for declarations"
     
-parseList :: Parser (For a)
+parseList :: Parser For
 parseList = do
     char '[' <* ws
     a <- some letter <* ws
@@ -109,11 +109,11 @@ parseList = do
   
 -- | Parses a single attribute of html tag
 -- Parses an attribute with values or without values
-attribute :: Parser (Attribute a)
+attribute :: Parser Attribute
 --attribute = try hIf <|> attributeWithValue <|> attributeOnly
 attribute = (try hIf) <|> attributeWithValue <|> attributeOnly
 
-hIf :: Parser (Attribute a)
+hIf :: Parser Attribute
 hIf = do
     string "hIf"
     char '='
@@ -124,7 +124,7 @@ hIf = do
 -- | Parses an attribute with values
 -- e.g. <div class="wrapper"></div>
 -- class="wrapper"
-attributeWithValue:: Parser (Attribute a)
+attributeWithValue:: Parser Attribute
 attributeWithValue= do
     attr <- ws *> some letter <* ws
     char '=' <* ws
@@ -134,12 +134,12 @@ attributeWithValue= do
     char '"' <* ws
     return $ Av attr value
 
-attributeValue :: Parser (AttributeValue a)
+attributeValue :: Parser AttributeValue
 attributeValue = do
     value <-  ws *> many ((noneOf "\"\t\n{}") <* many (oneOf "\t\n")) 
     return $ Value value
 
-attributePlaceholder :: Parser (AttributeValue a)
+attributePlaceholder :: Parser AttributeValue
 attributePlaceholder = do 
     p <- placeholder'
     return $ Placeholder p Null
@@ -163,14 +163,14 @@ placeholder' = do
 -- | Parses an attribute without values
 -- e.g. <div hidden></div>
 -- hidden
-attributeOnly :: Parser (Attribute a)
+attributeOnly :: Parser Attribute
 attributeOnly = do
     ws
     name <- some letter
     ws 
     return $ A name
 
-satisfiability :: Parser (Expr a)
+satisfiability :: Parser Expr
 satisfiability = expr 
     where   expr = buildExpressionParser operators term <?> "compound expression"
             term      =  parens expr <|> variable <?> "full expression"
@@ -181,15 +181,15 @@ satisfiability = expr
             parens p = SubExpr <$> (char '(' *> ws *> p <* char ')' <* ws) <?> "parens"
 
 -- testSatis = [sat|d AND e|]
-variable :: Parser (Expr a)
+variable :: Parser Expr
 variable = do 
     a <- boolExpr
     return $ Var a
 
-boolExpr :: Parser (BoolExpr a)
+boolExpr :: Parser BoolExpr
 boolExpr = (try boolExprM) <|> (try boolExprS)
 
-boolExprM :: Parser (BoolExpr a)
+boolExprM :: Parser BoolExpr
 boolExprM = do
     --notFollowedBy opString
     var1 <- some (letter <|> digit)
@@ -200,7 +200,7 @@ boolExprM = do
     ws
     return $ BExpr var1 op var2 Null Null
 
-boolExprS :: Parser (BoolExpr a)
+boolExprS :: Parser BoolExpr
 boolExprS = do 
     a <- ((some (letter)) <* ws) <?> "variable"
     return $ BExprS a Null
