@@ -10,7 +10,7 @@ import Ehs
 import Data
 
 main :: IO ()
-main = print "Hello World"
+main = renderHtml ""
 
 a = T_String "wie gehts"
 

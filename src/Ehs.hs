@@ -14,8 +14,8 @@ initData :: String -> IO()
 initData loc = do
     writeFile (loc ++ "Data.hs") templateData
 
-renderHtml_test :: String -> [HTMLValue] -> IO()
-renderHtml_test file content = do
+renderHtml :: String -> [HTMLValue] -> IO()
+renderHtml file content = do
     writeFile file (list_to_string content)
 
 
