@@ -42,7 +42,6 @@ gerta = T_Int 2
 frieda = T_Int 7
 
 testHtml :: [HTMLValue]
---testHtml = [html|<div>hello world</div>|]
 testHtml = [html|<div [a<-myArray]><span [b<-a]><div hIf="b > gerta">{{ b }} Hello World</div></span></div>|]
 --testHtml = [html|<div class="hello" hIf="myVar5 > myVar6"><span>Hello World</span></div>|]
 
@@ -59,7 +58,7 @@ testHtml = [html|<div [a<-myArray]><span [b<-a]><div hIf="b > gerta">{{ b }} Hel
 
 
 
-renderHtml :: String -> IO()
-renderHtml file = do
-    writeFile file (list_to_string [html|<div [a<-myArray]><span [b<-a]><div hIf="b > gerta">{{ b }} Hello World</div></span></div>|])
+renderHtml :: String -> [HTMLValue] -> IO()
+renderHtml file content = do
+    writeFile file (list_to_string content)
 
