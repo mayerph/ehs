@@ -10,7 +10,8 @@ import Ehs
 import Data
 
 main :: IO ()
-main = renderHtml ""
+main = do
+    renderHtml "template/schedule.html" testHtmlDoc
 
 a = T_String "wie gehts"
 
