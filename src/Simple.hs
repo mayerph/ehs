@@ -58,7 +58,11 @@ checkVars = checkMulti
 
 checkMulti :: Parser SomeValue
 checkMulti = do
-    val <- some (some (noneOf " ") <* ws)
+    string "{{"
+    ws
+    val <- some (some (noneOf " }") <* ws)
+    ws
+    string "}}"
     return $ PlaceholderM val NullS
 
 -- Haskell

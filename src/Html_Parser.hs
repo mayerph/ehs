@@ -55,8 +55,8 @@ htmlContent = many $ (try htmlParser) <|> (HContent <$> (try (contentPlaceholder
 
 contentPlaceholder :: Parser Content
 contentPlaceholder = do
-    p <- placeholder
-    return $ CVar p Null
+    p <- placeholderM
+    return $ CVarM p Null
  
 content :: Parser String
 content = (ws *> ((some $ noneOf "<,\n{}")) <* ws)
@@ -141,8 +141,8 @@ attributeValue = do
 
 attributePlaceholder :: Parser AttributeValue
 attributePlaceholder = do 
-    p <- placeholder'
-    return $ Placeholder p Null
+    p <- placeholderM'
+    return $ PlaceholderM p Null
 
 placeholder :: Parser String
 placeholder = do
@@ -151,10 +151,28 @@ placeholder = do
     closingPlaceholder
     return value
 
+placeholderM :: Parser [String]
+placeholderM = do
+    openingPlaceholder
+    ws
+    value <- some (some ((try letter) <|> (try (oneOf "-_")) <|> try digit) <* ws)
+    ws
+    closingPlaceholder
+    return value
+
 placeholder' :: Parser String
 placeholder' = do
     char '{'
     value <- ws *> some (letter <|> oneOf "-_" <|> digit) <* ws
+    char '}'
+    return value
+
+placeholderM' :: Parser [String]
+placeholderM' = do
+    char '{'
+    ws
+    value <- some (some ((try letter) <|> (try (oneOf "-_")) <|> try digit) <* ws)
+    ws
     char '}'
     return value
     

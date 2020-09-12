@@ -41,14 +41,15 @@ myArray = T_List[T_List[T_Int 1, T_Int 2], T_List[T_Int 6, T_Int 8]]
 gerta = T_Int 2
 frieda = T_Int 7
 
-data Foo = Foo {i :: Int, s :: String} deriving (Show)
-f1_list = [Foo {s = "foo1", i = 1}, Foo {s = "foo2", i = 2}]
-
-f1 = T_String (s (Foo {s = "foo1", i = 1}))
+data Foo = Foo {iS :: Int, sS :: String} deriving (Show)
 
 
+f1 = Foo {sS = "foo1", iS = 1}
+
+garten = "welt"
+garten2 = 2
 testHtml :: [HTMLValue]
-testHtml = [html|<div>Hello World</div>|]
+testHtml = [html|<div [a<-myArray] class="{ T_String sS f1}">Hello World {{ T_String sS f1 }}</div>|]
 --testHtml = [html|<div [a<-myArray]><span [b<-a]><div hIf="b > gerta">{{ b }} Hello World</div></span></div>|]
 --testHtml = [html|<div class="hello" hIf="myVar5 > myVar6"><span>Hello World</span></div>|]
 

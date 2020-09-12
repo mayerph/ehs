@@ -10,6 +10,7 @@ import Simple;
 
 testWeg = "hello"
 
+
 data Foo = Foo {iS :: Int, sS :: String} 
     deriving (Show)
 
@@ -19,7 +20,7 @@ moreTest :: String -> String
 moreTest a = a ++ "Welt"
 
 testSimple :: SomeValue
-testSimple = [simple|T_String        moreTest       sS fSimple|]
+testSimple = [simple|{{ T_String sS fSimple }}|]
 
 
 

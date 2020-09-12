@@ -23,7 +23,7 @@ type AttributeName = String
 data Placeholder = Null | ValueB Bool | ValueA Template | P String
     deriving (Eq, Ord)
 
-data AttributeValue = Value String | Placeholder String Placeholder
+data AttributeValue = Value String | Placeholder String Placeholder | PlaceholderM [String] Placeholder
 
 data Attribute =  A AttributeName | Av AttributeName AttributeValue | If Expr
 
@@ -31,7 +31,7 @@ data Element = EName String [Attribute]
 
 data ForWrapper = FW Element For
 
-data Content = CText String | CVar String Placeholder
+data Content = CText String | CVar String Placeholder | CVarM [String] Placeholder
 
 data SingleValue = Single [(Element, [HTMLValue])]
 
@@ -58,6 +58,8 @@ instance Show Placeholder where
 instance Show AttributeValue where
     show (Value a) = show a
     show (Placeholder a b) = show b
+    show (PlaceholderM a b) = "\"" ++ show b ++ "\""
+    
 
 instance Show Attribute where
     show (A x) = id x
@@ -70,6 +72,7 @@ instance Show Element where
 instance Show Content where
     show (CText a) = id a
     show (CVar a b) = show b
+    show (CVarM a b) = show b
 
 instance Show SingleValue where
     show (Single x) = concat ["<" ++ show x1 ++ ">" ++ (list_to_string $ x2) ++ "</" ++ id (getElemName x1) ++ ">"  | (x1, x2) <- x,  eval x1]
@@ -92,6 +95,7 @@ instance Lift SingleValue where
 instance Lift Content where
     lift (CText i) = appE (conE 'CText) (lift i)
     lift (CVar x y) = appE (appE (conE 'CVar) (lift x)) (appE (conE 'P) (newShow $ mkVar x))
+    lift (CVarM x y) = appE (appE (conE 'CVarM) (lift x)) (appE (conE 'ValueA) (mkVarExtension x))
 
 newShow x = appE (varE $ mkName "show") x
 
@@ -106,6 +110,7 @@ instance Lift Attribute where
 instance Lift AttributeValue where
     lift (Value i) = appE (conE 'Value) (lift i)
     lift (Placeholder x y) = appE (appE (conE 'Placeholder) (lift x)) (appE (conE 'ValueA) (mkVar x))
+    lift (PlaceholderM x y) = appE (appE (conE 'PlaceholderM) (lift x)) (appE (conE 'ValueA) (mkVarExtension x))
 
 instance Lift Placeholder where
     lift (P i) = appE (conE 'P) (lift i)
@@ -184,3 +189,11 @@ evalBoolean (BExpr _ Ne _ x y) = x /= y
 evalBoolean _ = False
 
 f a = a
+
+
+
+mkVarExtension :: [String] -> ExpQ
+mkVarExtension (c:list) = appE (conE $ mkName c) (myReverse list)
+    where 
+        myReverse (x1:[]) = mkVar x1
+        myReverse (x1:xr) = appE (mkVar x1) (myReverse xr)
