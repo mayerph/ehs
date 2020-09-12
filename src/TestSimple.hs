@@ -15,9 +15,11 @@ data Foo = Foo {iS :: Int, sS :: String}
 
 fSimple = Foo {sS = "foo1", iS = 1}
 
+moreTest :: String -> String
+moreTest a = a ++ "Welt"
 
 testSimple :: SomeValue
-testSimple = [simple|T_String sS fSimple|]
+testSimple = [simple|T_String        moreTest       sS fSimple|]
 
 
 

@@ -26,7 +26,7 @@ instance Lift PlaceholderSimple where
 
 instance Lift SomeValue where  
    
-    lift (PlaceholderM x y) = appE (appE (conE 'PlaceholderM) (lift x)) (appE (conE 'PSimple) (mkVarExt x))
+    lift (PlaceholderM x y) = appE (appE (conE 'PlaceholderM) (lift x)) (appE (conE 'PSimple) (mkVarExtension x))
 
 
 compile str = do 
@@ -46,6 +46,12 @@ mkVar a = varE $ mkName a
 mkVarExt :: [String] -> ExpQ
 mkVarExt (x1:x2:x3:xr) = appE (conE $ mkName x1) (appE (mkVar x2) (mkVar x3))
 --mkVarExt (x1:[]) = varE $ mkName x1
+
+mkVarExtension :: [String] -> ExpQ
+mkVarExtension (c:list) = appE (conE $ mkName c) (myReverse list)
+    where 
+        myReverse (x1:[]) = mkVar x1
+        myReverse (x1:xr) = appE (mkVar x1) (myReverse xr)
 
 checkVars :: Parser SomeValue
 checkVars = checkMulti
