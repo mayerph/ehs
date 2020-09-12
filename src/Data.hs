@@ -22,6 +22,7 @@ data Template =
 instance Lift Template where
     lift (T_String i) = appE (conE 'T_String) (lift i)
     lift (T_Int i) = appE (conE 'T_Int) (lift i)
+    lift (T_List i) = appE (conE 'T_List) (lift i)
 
 instance Show Template where
     show (Empty) = "Empty"

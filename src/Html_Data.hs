@@ -83,7 +83,8 @@ instance Show HTMLValue where
 
 instance Lift For where
     lift (N) = (conE 'N)
-    lift (F x y z) = appE (appE (appE (conE 'F) (lift x)) (lift y)) (mkVar y)
+    --lift (F x y z) = appE (appE (appE (conE 'F) (lift x)) (lift y)) (mkVar y)
+    lift (F x y z) = appE (appE (appE (conE 'F) (lift x)) (lift y)) (appE (conE 'T_List) (mkVar y))
 
 instance Lift HTMLValue where
     lift (HTML x y) = appE (appE (conE 'HTML) (lift x)) (mkFor x y)
@@ -141,7 +142,7 @@ instance Lift BoolExpr where
 mkFor:: For -> SingleValue -> ExpQ
 mkFor (F x y z) s = case s of 
     (Single a) -> do
-        let multSingle = compE [bindS (varP $ mkName x) (appE unpack_ (varE $ mkName y)), noBindS (appE (varE $ mkName "f") (lift a))]
+        let multSingle = compE [bindS (varP $ mkName x) (appE unpack_ ((appE (conE 'T_List) (mkVar y)))), noBindS (appE (varE $ mkName "f") (lift a))]
         let single = appE (varE $ mkName "concat") (multSingle)
         appE (conE 'Single) (single)
         where 

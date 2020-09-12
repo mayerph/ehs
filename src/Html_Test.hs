@@ -36,7 +36,8 @@ myVarB = "A"
 myVar5 = T_Int 1
 myVar6 = T_Int 0
 
-myArray = T_List[T_List[T_Int 1, T_Int 2], T_List[T_Int 6, T_Int 8]]
+--myArray = T_List[T_List[T_Int 1, T_Int 2], T_List[T_Int 6, T_Int 8]]
+myArray = [T_Int 1, T_Int 2]
 
 gerta = T_Int 2
 frieda = T_Int 7
