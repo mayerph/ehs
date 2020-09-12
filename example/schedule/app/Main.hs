@@ -16,4 +16,4 @@ main = do
 a = T_String "wie gehts"
 
 testHtmlDoc :: [HTMLValue]
-testHtmlDoc = [html|<div>hi{{ a }} sonst so</div>|]
+testHtmlDoc = [html|<div>hi {{ a }} sonst so</div>|]

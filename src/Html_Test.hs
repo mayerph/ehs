@@ -42,7 +42,8 @@ gerta = T_Int 2
 frieda = T_Int 7
 
 testHtml :: [HTMLValue]
-testHtml = [html|<div [a<-myArray]><span [b<-a]><div hIf="b > gerta">{{ b }} Hello World</div></span></div>|]
+testHtml = [html|<div>Hello World</div>|]
+--testHtml = [html|<div [a<-myArray]><span [b<-a]><div hIf="b > gerta">{{ b }} Hello World</div></span></div>|]
 --testHtml = [html|<div class="hello" hIf="myVar5 > myVar6"><span>Hello World</span></div>|]
 
 
@@ -58,5 +59,7 @@ testHtml = [html|<div [a<-myArray]><span [b<-a]><div hIf="b > gerta">{{ b }} Hel
 
 
 
+data Foo = Foo {i :: Int, s :: String} deriving (Show)
+f1 = Foo {s = "foo1", i = 1}
 
 
