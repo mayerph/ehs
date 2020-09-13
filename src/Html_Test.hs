@@ -8,6 +8,7 @@ import Html_Parser
 import Html_Data
 import Data
 import Helper
+import Ehs
 
 a = 1
 b = 2
@@ -61,7 +62,7 @@ testPlaceholder = [html|<div id="{ T_Int uid user1 }">
 
 {-|
   The 'testIteration' function demonstrates the iteration functionality. 
-  It can be used to create content for lists of data.
+  It can be used to multiply html elements regarding to the provided list. 
 
   1. To use this functionality you first have to pack the list and all its entries with a constructor of the datatype 'template'.
         (T_List [T_User user1, T_User user2, T_User user3])
@@ -92,3 +93,9 @@ testAllFeatures = [html|<div [u <- users] id="{ T_Int uid unpackUser u }" hIf="T
 -}
 unpackUser :: Template -> User 
 unpackUser (T_User a) = a
+
+{-|
+  The 'testIO' function demonstrates how to write down the generated html to file. 
+-}
+testIO :: IO ()
+testIO = renderHtml "test.html" testExpr_True
