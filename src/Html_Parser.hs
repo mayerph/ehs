@@ -185,20 +185,35 @@ attributeValue = do
     return $ Value value
 
 {-| 
-    The 'attributePlaceholder' function parses the placeholder pattern of of an attribute value.
+    The 'attributePlaceholder' function parses the placeholder pattern of an attribute value.
     It converts the value from String to AttributeValue
 -}
 attributePlaceholder :: Parser AttributeValue
 attributePlaceholder = do 
-    p <- placeholderM
+    p <- placeholderM'
     return $ PlaceholderM p Null
 
 {-| 
-    The 'placeholderM' function parses the placeholder pattern of of an attribute value.
+    The 'placeholderM' function parses the placeholder pattern of a html content.
     e.g '{ T_String a }'
 -}
 placeholderM :: Parser [String]
 placeholderM = do
+    ws
+    openingPlaceholder
+    ws
+    value <- some (some ((try letter) <|> (try (oneOf "-_")) <|> try digit) <* ws)
+    ws
+    closingPlaceholder
+    ws
+    return value
+
+{-| 
+    The 'placeholderM' function parses the placeholder pattern of an attribute value.
+    e.g '{ T_String a }'
+-}
+placeholderM' :: Parser [String]
+placeholderM' = do
     char '{'
     ws
     value <- some (some ((try letter) <|> (try (oneOf "-_")) <|> try digit) <* ws)
@@ -219,7 +234,7 @@ attributeOnly = do
     return $ A name
 
 {-| 
-    The 'satisfiability' function parses an boolean expression pattern.
+    The 'satisfiability' function parses a set of boolean expression patterns combined via logical operators.
     e.g T_String role1 != T_String role2 'AND' ('NOT' T_Int a > T_Int b)
 -}
 satisfiability :: Parser Expr
@@ -233,7 +248,7 @@ satisfiability = expr
             parens p = SubExpr <$> (char '(' *> ws *> p <* char ')' <* ws) <?> "parens"
 
 {-| 
-    The 'varialbe' function parses a placeholder.
+    The 'varialbe' function parses a single boolean expression.
 -}
 variable :: Parser Expr
 variable = do 
@@ -242,7 +257,7 @@ variable = do
 
 {-| 
     The 'boolExpr' function parses a single boolean expression pattern.
-    It can be written down expression or a placeholder for an expression 
+    It can be a written down expression or a placeholder for an expression 
 -}
 boolExpr :: Parser BoolExpr
 boolExpr = (try boolExprM) <|> (try boolExprS)
@@ -270,7 +285,7 @@ boolExprS = do
     return $ BExprS a Null
 
 {-| 
-    The 'boolOp' function parses the boolean operators.
+    The 'boolOp' function parses the boolean comparison operators.
     e.g >=
 -}
 boolOp :: Parser BoolOp
