@@ -16,12 +16,9 @@ import Helper
 
 main :: IO ()
 main = do
-    print "Hello World"
+    print "Embedded Haskell"
 
 
 renderHtml :: String -> [HTMLValue] -> IO()
 renderHtml file content = do
     writeFile file (list_to_string content)
-   
-
-testDoc = [html|<div>Hello World</div>|]

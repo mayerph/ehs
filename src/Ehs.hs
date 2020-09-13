@@ -10,10 +10,16 @@ import Html_Data
 import Data
 import Helper
 
+{-|
+  The 'initData' function initialies the basic Template datatype.
+-}
 initData :: String -> IO()
 initData loc = do
     writeFile (loc ++ "Data.hs") templateData
 
+{-|
+  The 'renderHtml' function writes the created html to file.
+-}
 renderHtml :: String -> [HTMLValue] -> IO()
 renderHtml file content = do
     writeFile file (list_to_string content)
