@@ -142,7 +142,6 @@ instance Show AttributeValue where
     show (Placeholder a b) = show b
     show (PlaceholderM a b) = "\"" ++ show b ++ "\""
     
-
 instance Show Attribute where
     show (A x) = id x
     show (Av x y) = " " ++ id x ++ "=" ++ show y
@@ -163,11 +162,23 @@ instance Show HTMLValue where
     show (HTML _ x) = show x
     show (HContent x) = show x
 
+{-|
+    'Lift For' important snippets:
+    1. (mkVar y), 
+        - where y is the name of the variable which value is the list of the iteration pattern
+        - creates the reference to the variable y. 
+        - e.g. [a <- my_list]. Here it would be the reference to my_list      
+-}
 instance Lift For where
     lift (N) = (conE 'N)
     lift (F x y z) = appE (appE (appE (conE 'F) (lift x)) (lift y)) (mkVar y)
-    lift (FM x y z) = appE (appE (appE (conE 'FM) (lift x)) (lift y)) (appE (conE 'T_List) (mkList x y))
     
+{-|
+    'Lift HTMLValue' important snippets:
+    1. (mkFor x y), 
+        - where x is the iteration pattern for a html element and y the html element itself
+        - multiplies the html element ragarding to the iteration pattern
+-}
 instance Lift HTMLValue where
     lift (HTML x y) = appE (appE (conE 'HTML) (lift x)) (mkFor x y)
     lift (HContent i) = appE (conE 'HContent) (lift i)
@@ -175,6 +186,19 @@ instance Lift HTMLValue where
 instance Lift SingleValue where
     lift (Single x) = appE (conE 'Single) (lift x)
 
+{-|
+    'Lift Content' important snippets:
+    1. (appE (conE 'P) (newShow $ mkVar x))
+        - where x is the name of the variable which value is the content of a html element 
+        - creates the reference to the variable x. 
+        - makes the referenced value to the value of the placeholder
+
+    2. (appE (conE 'ValueA) (mkVarExtension x)), 
+        - where x contains the name of the variable hich value is the content of a html element,
+            the name of the applied template constructor and applied functions
+        - creates the reference to the variable inside of x. 
+        - makes the referenced value to the value of the placeholder
+-}
 instance Lift Content where
     lift (CText i) = appE (conE 'CText) (lift i)
     lift (CVar x y) = appE (appE (conE 'CVar) (lift x)) (appE (conE 'P) (newShow $ mkVar x))
@@ -188,6 +212,19 @@ instance Lift Attribute where
     lift (Av x y) = appE (appE (conE 'Av) (lift x)) (lift y)
     lift (If i) = appE (conE 'If) (lift i)
 
+{-|
+    'Lift AttributeValue' important snippets:
+    1. (appE (conE 'ValueA) (mkVar x)
+        - where x is the name/key of the variable which value is the value of the attribute.
+        - creates the reference to the variable x. 
+        - makes the referenced value to the value of the placeholder
+
+    2. (appE (conE 'ValueA) (mkVarExtension x)), 
+        - where x contains the name of the variable which value is the value of the attribute,
+            the name of the applied template constructor and applied functions.
+        - creates the reference to the variable inside of x. 
+        - makes the referenced value to the value of the placeholder
+-}
 instance Lift AttributeValue where
     lift (Value i) = appE (conE 'Value) (lift i)
     lift (Placeholder x y) = appE (appE (conE 'Placeholder) (lift x)) (appE (conE 'ValueA) (mkVar x))
@@ -214,10 +251,28 @@ instance Lift BoolOp where
     lift (Ge) = conE 'Ge
     lift (Ne) = conE 'Ne
 
+
+{-|
+    'Lift BoolExpr' important snippets:
+    1. (appE (conE 'ValueA) (mkVarExtension x)) 
+        - where x contains the name/key of the variable which value should be the left part of a boolean expression
+            and the name of the applied template constructor and applied functions
+        - creates the reference to the variable inside of x. 
+        - makes the referenced value to the value of the placeholder
+
+    2. (appE (conE 'ValueA) (mkVarExtension z))
+        - where z is the name/key of the variable which value should be the right part of a boolean expression
+            and the name of the applied template constructor and applied functions
+        - creates the reference to the variable inside of z. 
+        - makes the referenced value to the value of the placeholder
+-}
 instance Lift BoolExpr where
     lift (BExpr x y z i j) = appE (appE (appE (appE (appE (conE 'BExpr) (lift x)) (lift y)) (lift z)) (appE (conE 'ValueA) (mkVarExtension x))) (appE (conE 'ValueA) (mkVarExtension z))
     lift (BExprS x y) = appE (appE (conE 'BExprS) (lift x)) (appE (conE 'ValueB) (mkVar x))
-    
+
+{-|
+  multiplies a html element regarding to the specified iteration pattern. 
+-}
 mkFor:: For -> SingleValue -> ExpQ
 mkFor (F x y z) s = case s of 
     (Single a) -> do
@@ -241,13 +296,33 @@ mkFor (FM (x1:x2:[]) y z) s = case s of
 mkFor (N) s = case s of 
     (Single a) -> lift s
 
+{-|
+  The 'unpack' function unpacks the list of T_List constructor
+-}
+unpack :: Template -> [Template]
 unpack a = case a of 
     T_List list -> list
     _ -> []
 
+{-|
+  The 'mkVar' function initiales a variable expression (template haskell code
+-}
 mkVar :: String -> ExpQ
 mkVar a = varE $ mkName a
 
+{-|
+  The 'filterAttribute' function is used for filtering attributes which shouldn't be displayed in the final html.
+-}
+filterAttribute :: Attribute -> Bool
+filterAttribute (A x) = True
+filterAttribute (Av x y) = True
+filterAttribute (If x) = False
+
+
+{-|
+  The 'mkVarExtension' function converts a placeholder pattern (template haskell code).
+  e. g. T_String firstName user1
+-}
 mkVarExtension :: [String] -> ExpQ
 mkVarExtension (c:[]) = mkVar c
 mkVarExtension (c:list) = appE (conE $ mkName c) (myReverse list)
@@ -255,14 +330,18 @@ mkVarExtension (c:list) = appE (conE $ mkName c) (myReverse list)
         myReverse (x1:[]) = mkVar x1
         myReverse (x1:xr) = appE (mkVar x1) (myReverse xr)
 
-filterAttribute :: Attribute -> Bool
-filterAttribute (A x) = True
-filterAttribute (Av x y) = True
-filterAttribute (If x) = False
 
+{-|
+  The 'getElemName' function returns the name of a html element.
+  e. g. div
+-}
 getElemName :: Element -> String
 getElemName (EName a _)  = a
 
+{-|
+  The 'eval' function evaluates a combined set of boolean expression.  
+  returns True or False.
+-}
 eval :: Element -> Bool
 eval (EName a b) = all (\x -> x) (map (\x -> 
     case x of  
@@ -295,7 +374,7 @@ evalBoolean (BExpr _ Ne _ x y) = x /= y
 evalBoolean _ = False
 
 {-|
-  applies the function show to template haskell expression.  
+  applies show to a template haskell expression.  
 -}
 newShow :: ExpQ -> ExpQ
 newShow x = appE (varE $ mkName "show") x

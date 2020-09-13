@@ -28,7 +28,7 @@ minIncome = 2500
 
 
 {-|
-  The 'testExpr' function demonstrates the boolean expression functionality of the app.
+  The 'testExpr_True' function demonstrates the boolean expression functionality of the app.
   This functionality can be used to display information regarding to the data
 
   It can be used inside of the hIf attribute. The most simple form of an expression looks like this: data1 > data2. 
@@ -37,8 +37,11 @@ minIncome = 2500
   You can combine boolean expression by using boolean operators ('AND', 'OR', 'NOT'). 
       T_Int data1 > T_Int data2 'AND' T_Int data3 < T_Int data4
 -}
-testExpr :: [HTMLValue]
-testExpr = [html|<div hIf="T_String role1 != T_String role2 'AND' ('NOT' T_Int a > T_Int b)">Hello World</div>|]
+testExpr_True :: [HTMLValue]
+testExpr_True = [html|<div hIf="T_String role1 != T_String role2 'AND' ('NOT' T_Int a > T_Int b)">Hello World</div>|]
+
+testExpr_False :: [HTMLValue]
+testExpr_False = [html|<div hIf="T_String role1 == T_String role2 'AND' ('NOT' T_Int a > T_Int b)">Hello World</div>|]
 
 
 {-|
