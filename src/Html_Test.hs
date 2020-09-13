@@ -34,7 +34,7 @@ minIncome = 2500
   It can be used inside of the hIf attribute. The most simple form of an expression looks like this: data1 > data2. 
   Be careful. In front of the data you have to define the type by applying a constructor of the datatype 'template' (e. g. T_String x).
       T_Int data1 > T_Int data2.
-  You can combine boolean expression by using boolean operators ('AND', 'OR', 'NOT'). 
+  You can combine boolean expression by using logical operators ('AND', 'OR', 'NOT'). 
       T_Int data1 > T_Int data2 'AND' T_Int data3 < T_Int data4
 -}
 testExpr_True :: [HTMLValue]
@@ -46,8 +46,8 @@ testExpr_False = [html|<div hIf="T_String role1 == T_String role2 'AND' ('NOT' T
 
 {-|
   The 'testPlaceholder' function demonstrates the placeholder functionality of the app.
-  By using the placeholder funcitonality for a attribute you have to put the data inside curley braces (e.g id="{ T_String x }"). 
-  By using the placeholder funcitonality for the content you have to put the data inside double curley braces (e.g {{ T_String x }}). 
+  By using the placeholder functionality for a attribute you have to put the data inside curley braces (e.g id="{ T_String x }"). 
+  By using the placeholder functionality for the content you have to put the data inside double curley braces (e.g {{ T_String x }}). 
 
   To define which datatype should be used by template haskell you have to specify a constructor of the datatype 'template' in front of 
         the data (e. g. T_String x).
