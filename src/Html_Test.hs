@@ -9,61 +9,45 @@ import Html_Data
 import Data
 import Helper
 
-test = "True"
-test4 = T_String "hey"
-myId = T_Int 1
-test2 = ["Wassermelone", "salamander"]
+a = 1
+b = 2
 
---wasser = ["4", "7"]
-wasser = [[3,2], [4,7]]
-melone = [1, 5]
+role1 = "student"
+role2 = "teacher"
 
---a = True
---b = True
-z = True
-c = True
-d = False
-e = False
+testExpr :: [HTMLValue]
+testExpr = [html|<div hIf="T_String role1 != T_String role2 'AND' ('NOT' T_Int a > T_Int b)">Hello World</div>|]
+
+greeting = "Hello"
 
 
-myVar3 = 3
-myVar4 = 3
+user1 = Data.User { uid = 1, firstName = "Max", lastName = "Mustermann", income = 2500 }
+user2 = Data.User { uid = 2, firstName = "Hans", lastName = "Glueck", income = 3000 }
+user3 = Data.User { uid = 3, firstName = "Peter", lastName = "Pan", income = 1500 }
+user4 = Data.User { uid = 4, firstName = "Jack", lastName = "Black", income = 3500  }
 
-myVarA = "A"
-myVarB = "A"
+userGrouped = T_List[T_List[T_User user1, T_User user2], T_List[T_User user3, T_User user4]]
 
+testPlaceholder :: [HTMLValue]
+testPlaceholder = [html|<div id="{ T_Int uid user1 }">
+    {{ T_String greeting }} World {{ T_String greeting }}, my Name is {{ T_String firstName user1 }} {{ T_String lastName user1 }}</div>|]
 
-myVar5 = T_Int 1
-myVar6 = T_Int 0
-
---myArray = T_List[T_List[T_Int 1, T_Int 2], T_List[T_Int 6, T_Int 8]]
-myArray = [T_Int 1, T_Int 2]
-
-gerta = T_Int 2
-frieda = T_Int 7
-
-data Foo = Foo {iS :: Int, sS :: String} deriving (Show)
+testIteration :: [HTMLValue]
+testIteration = [html|<div [group <- userGrouped]><p [user <- group] id="{ T_Int uid unpackUser user }">
+    Hello {{ T_String firstName unpackUser user }}</p></div>|]
 
 
-f1 = Foo {sS = "foo1", iS = 1}
+users = T_List[T_User user1, T_User user2, T_User user3, T_User user4]
 
-garten = "welt"
-garten2 = 2
-testHtml :: [HTMLValue]
-testHtml = [html|<div [a<-myArray] class="{ T_String sS f1}">Hello World {{ T_String sS f1 }}</div>|]
---testHtml = [html|<div [a<-myArray]><span [b<-a]><div hIf="b > gerta">{{ b }} Hello World</div></span></div>|]
---testHtml = [html|<div class="hello" hIf="myVar5 > myVar6"><span>Hello World</span></div>|]
+minIncome = 2500
+testAllFeatures :: [HTMLValue]
+testAllFeatures = [html|<div [u <- users] id="{ T_Int uid unpackUser u }" hIf="T_Int income unpackUser u > T_Int minIncome">
+    My name is {{ T_String firstName unpackUser u }} {{ T_String lastName unpackUser u }}</div>|]
 
 
---testParser = [html|<div class="test" id="{myId}">{{ myId }} hi geht heute {{ myId }}</div>|]
---testHtml = [html|<div [a<-wasser]><span [b<-a]>Hello World</span></div>|]
---testHtml = [html|<div [a <- melone]><span hIf="a < myVar4">Hello World</span></div>|]
---testHtml = [html|<div class="hello" hIf="myVarA == myVarB"><span hIf="myVarA == myVarB">{{ test }} Hello World</span></div>|]
---testHtml = [html|<div class="hello" hIf="myVar3 == myVar4"><span hIf="myVarA == myVarB">{{ test }} Hello World</span></div>|]
---testHtml = [html|<div class="hello" hIf="myVar3 == myVar4"><span>{{ test }} Hello World</span></div>|]
---testHtml = [html|<div class="hello">{{ test }} Hello World</div>|]
---testHtml = [html|<div hIf="myVar3 > myVar4 AND z">Hello World</div>|]
---testParser = [html|<div><span [a<-wasser]>{{test}} Hello World {{test}}</span></div>|]
+unpackUser :: Template -> User 
+unpackUser (T_User a) = a
+
 
 
 

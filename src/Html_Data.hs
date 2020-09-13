@@ -17,6 +17,7 @@ import Text.ParserCombinators.Parsec.Expr as ParsecExpr
 
 import Helper
 import Data
+import Data.Typeable
 
 type AttributeName = String
 
@@ -37,13 +38,13 @@ data SingleValue = Single [(Element, [HTMLValue])]
 
 data HTMLValue = HTML For SingleValue  | HContent Content
 
-data For = N | F String String Template
+data For = N | F String String Template | FM [String] String Template
     deriving Show
 
 data BoolOp = Eq | Lt | Gt | Le | Ge | Ne
     deriving (Show, Eq, Ord)
 
-data BoolExpr = BExpr String BoolOp String Placeholder Placeholder | BExprS String Placeholder
+data BoolExpr = BExpr [String] BoolOp [String] Placeholder Placeholder | BExprS String Placeholder
     deriving (Show, Eq, Ord)
 
 data Expr = Not Expr | And Expr Expr | Or Expr Expr | Var BoolExpr | SubExpr Expr
@@ -72,20 +73,24 @@ instance Show Element where
 instance Show Content where
     show (CText a) = id a
     show (CVar a b) = show b
-    show (CVarM a b) = show b
+    show (CVarM a b) = show b 
 
 instance Show SingleValue where
     show (Single x) = concat ["<" ++ show x1 ++ ">" ++ (list_to_string $ x2) ++ "</" ++ id (getElemName x1) ++ ">"  | (x1, x2) <- x,  eval x1]
 
 instance Show HTMLValue where 
     show (HTML _ x) = show x
-    show (HContent x) = show x    
+    show (HContent x) = show x
 
 instance Lift For where
     lift (N) = (conE 'N)
     --lift (F x y z) = appE (appE (appE (conE 'F) (lift x)) (lift y)) (mkVar y)
-    lift (F x y z) = appE (appE (appE (conE 'F) (lift x)) (lift y)) (appE (conE 'T_List) (mkVar y))
+    lift (F x y z) = appE (appE (appE (conE 'F) (lift x)) (lift y)) (mkVar y)
+    lift (FM x y z) = appE (appE (appE (conE 'FM) (lift x)) (lift y)) (appE (conE 'T_List) (mkList x y))
 
+mkList (x1:x2:[]) y = compE [bindS (varP $ name) (varE $ mkName y), noBindS (appE (conE $ mkName x1) (varE name))]
+    where name = mkName x2
+    
 instance Lift HTMLValue where
     lift (HTML x y) = appE (appE (conE 'HTML) (lift x)) (mkFor x y)
     lift (HContent i) = appE (conE 'HContent) (lift i)
@@ -135,24 +140,44 @@ instance Lift BoolOp where
     lift (Ne) = conE 'Ne
 
 instance Lift BoolExpr where
-    lift (BExpr x y z i j) = appE (appE (appE (appE (appE (conE 'BExpr) (lift x)) (lift y)) (lift z)) (appE (conE 'ValueA) (mkVar x))) (appE (conE 'ValueA) (mkVar z))
+    lift (BExpr x y z i j) = appE (appE (appE (appE (appE (conE 'BExpr) (lift x)) (lift y)) (lift z)) (appE (conE 'ValueA) (mkVarExtension x))) (appE (conE 'ValueA) (mkVarExtension z))
     lift (BExprS x y) = appE (appE (conE 'BExprS) (lift x)) (appE (conE 'ValueB) (mkVar x))
     
 
 mkFor:: For -> SingleValue -> ExpQ
 mkFor (F x y z) s = case s of 
     (Single a) -> do
-        let multSingle = compE [bindS (varP $ mkName x) (appE unpack_ ((appE (conE 'T_List) (mkVar y)))), noBindS (appE (varE $ mkName "f") (lift a))]
+        let multSingle = compE [bindS (varP $ mkName x) (appE unpack_ (varE $ mkName y)), noBindS (appE (varE $ mkName "f") (lift a))]
         let single = appE (varE $ mkName "concat") (multSingle)
         appE (conE 'Single) (single)
         where 
             unpack_ = varE $ mkName "unpack"
+
+mkFor (FM (x1:x2:[]) y z) s = case s of 
+    (Single a) -> do
+        let name = mkName x2
+        let newList = compE [bindS (varP name) (mkVar y), noBindS (appE (conE $ mkName x1) (varE name))]
+
+        let multSingle = compE [bindS (varP $ mkName x2) (appE unpack_ ((appE (conE 'T_List) newList))), noBindS (appE (varE $ mkName "f") (lift a))]
+        let single = appE (varE $ mkName "concat") (multSingle)
+        appE (conE 'Single) (single)
+        where 
+            unpack_ = varE $ mkName "unpack"
+            map_ = varE $ mkName "map"
+
 mkFor (N) s = case s of 
     (Single a) -> lift s
+
+
+
 
 unpack a = case a of 
     T_List list -> list
     _ -> []
+
+
+
+
 
 mkVar :: String -> ExpQ
 mkVar a = varE $ mkName a
@@ -194,6 +219,7 @@ f a = a
 
 
 mkVarExtension :: [String] -> ExpQ
+mkVarExtension (c:[]) = mkVar c
 mkVarExtension (c:list) = appE (conE $ mkName c) (myReverse list)
     where 
         myReverse (x1:[]) = mkVar x1

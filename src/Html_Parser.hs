@@ -59,7 +59,7 @@ contentPlaceholder = do
     return $ CVarM p Null
  
 content :: Parser String
-content = (ws *> ((some $ noneOf "<,\n{}")) <* ws)
+content = (ws *> ((some $ noneOf "<\n{}")) <* ws)
 
 
 openingPlaceholder :: Parser Char
@@ -105,6 +105,15 @@ parseList = do
     b <- some letter <* ws
     char ']'
     return $ F a b Empty
+
+parseListM :: Parser For
+parseListM = do
+    char '[' <* ws
+    a <- some (some (noneOf "<- ") <* ws)
+    string "<-" <* ws
+    b <- some letter <* ws
+    char ']'
+    return $ FM a b Empty
 
   
 -- | Parses a single attribute of html tag
@@ -153,11 +162,13 @@ placeholder = do
 
 placeholderM :: Parser [String]
 placeholderM = do
+    ws
     openingPlaceholder
     ws
     value <- some (some ((try letter) <|> (try (oneOf "-_")) <|> try digit) <* ws)
     ws
     closingPlaceholder
+    ws
     return value
 
 placeholder' :: Parser String
@@ -192,9 +203,9 @@ satisfiability :: Parser Expr
 satisfiability = expr 
     where   expr = buildExpressionParser operators term <?> "compound expression"
             term      =  parens expr <|> variable <?> "full expression"
-            operators = [ [Prefix (string "NOT" >> ws >> return Not)]
-                      , [binary "AND" And]
-                      , [binary "OR" Or] ]
+            operators = [ [Prefix (string "'NOT'" >> ws >> return Not)]
+                      , [binary "'AND'" And]
+                      , [binary "'OR'" Or] ]
                 where binary n c = ParsecExpr.Infix (string n *> ws *> pure c) AssocLeft
             parens p = SubExpr <$> (char '(' *> ws *> p <* char ')' <* ws) <?> "parens"
 
@@ -210,11 +221,11 @@ boolExpr = (try boolExprM) <|> (try boolExprS)
 boolExprM :: Parser BoolExpr
 boolExprM = do
     --notFollowedBy opString
-    var1 <- some (letter <|> digit)
+    var1 <- some (some ((try letter) <|> (try (oneOf "-_")) <|> try digit) <* ws)
     ws
     op <- boolOp 
     ws
-    var2 <- some (letter <|> digit)
+    var2 <- some (some ((try letter) <|> (try (oneOf "-_")) <|> try digit) <* ws)
     ws
     return $ BExpr var1 op var2 Null Null
 
