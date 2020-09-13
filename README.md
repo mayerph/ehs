@@ -1,12 +1,16 @@
 # Embedded Haskell (ehs)
 
+## General
+
+Embedded Haskell is a html templating engine for generating html documents depending on the provided data. It is based on two libraries. Parsec is used for implementing the Html Parser. And Template Haskell enables the possibility to generate code and providing variables.
+
 ## Features
 
 ### Expressions
 
 #### General Explanation
 
-- The Expression functionality can be used to hide and show information regarding to the provided data.
+- The Expression functionality can be used to hide and show information depending on the provided data.
 - An expression has to to be assigned to a hIf attribute.
   - hIf="..."
 - The most simple form of an expression looks similar to this:
@@ -49,7 +53,7 @@
 
 #### General Explanation
 
-The iteration functionality can be used to multiply html elements regarding to the provided list.
+The iteration functionality can be used to multiply html elements depending on the provided list.
 
 1.  To use this functionality you first have to pack the list and all its entries with a constructor of the datatype 'template'.
     T_List [T_User user1, T_User user2, T_User user3]
@@ -60,8 +64,6 @@ The iteration functionality can be used to multiply html elements regarding to t
 3.  The single element (left one) then can be used as a placeholder for templating. But this this time the element is already packed because of the preparation phase (phase 1). Because of that you have to write an unpack function (e.g. unpackUser), which then has to be applied to the data. Beside this special case the templating works like specified in the Placeholder Section.
 
         {{ T_String firstName unpackUser user}}
-
-<hr />
 
 ## Examples
 
@@ -81,8 +83,6 @@ The iteration functionality can be used to multiply html elements regarding to t
     - testAllFeatures
   - To run the demo function which shows the write-to-disk functionality type in:
     - testIO
-
-<hr />
 
 ## Project structure
 
@@ -106,8 +106,6 @@ The iteration functionality can be used to multiply html elements regarding to t
 - src/Data.hs.txt
   - contains the basic implementation of the Template datatype which can be used in external projects.
   - This implementation has to be maintained by the user.
-
-<hr />
 
 ### How to use
 
