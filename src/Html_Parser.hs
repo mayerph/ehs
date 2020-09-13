@@ -74,7 +74,7 @@ contentPlaceholder = do
   e. g. Hello World and happy coding
 -}
 content :: Parser String
-content = (ws *> ((some $ noneOf "<\n{}")) <* ws)
+content = (tn *> ((some $ noneOf "<\n{}")) <* tn)
 
 {-|
   The 'openingPlaceholder' function parses the startpoint of a placeholder pattern for the content section. 
@@ -105,6 +105,7 @@ openingtag = do
     for <- many parseList
     attr <- many attribute
     char '>'
+    ws
     case for of
         (a:[]) -> return $ FW (EName tagName attr) a
         ([]) -> return $ FW (EName tagName attr) N
@@ -199,13 +200,13 @@ attributePlaceholder = do
 -}
 placeholderM :: Parser [String]
 placeholderM = do
-    ws
+    tn
     openingPlaceholder
     ws
     value <- some (some ((try letter) <|> (try (oneOf "-_")) <|> try digit) <* ws)
     ws
     closingPlaceholder
-    ws
+    tn
     return value
 
 {-| 

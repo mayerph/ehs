@@ -57,7 +57,7 @@ testExpr_False = [html|<div hIf="T_String role1 == T_String role2 'AND' ('NOT' T
 -}
 testPlaceholder :: [HTMLValue]
 testPlaceholder = [html|<div id="{ T_Int uid user1 }">
-    {{ T_String greeting }} World {{ T_String greeting }}, my Name is {{ T_String firstName user1 }} {{ T_String lastName user1 }}</div>|]
+    {{ T_String greeting }} World, my Name is {{ T_String firstName user1 }} {{ T_String lastName user1 }}</div>|]
 
 
 {-|
@@ -99,9 +99,3 @@ unpackUser (T_User a) = a
 -}
 testIO :: IO ()
 testIO = renderHtml "testio.html" testExpr_True
-
-
-simple = "HI"
-simple2 = "Du"
-testsimple :: [HTMLValue]
-testsimple = [html|<div>{{ T_String simple }} Hello World </div>|]
