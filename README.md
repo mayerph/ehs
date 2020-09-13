@@ -107,9 +107,12 @@ The iteration functionality can be used to multiply html elements depending on t
   - contains the basic implementation of the Template datatype which can be used in external projects.
   - This implementation has to be maintained by the user.
 
-### How to use
+## How to use
 
-1. Import the EHS module. This module provides all necessary functions for parsing a html string.
-2. Create and import the Template datatype. The must have basic implementation can be found in the directory src/Data.hs.txt
-   - This implementation has to be updated if you want to use a custom datatype
-   - The src/Data.hs for example introduced the new constructor T_User for using the custom datatype User for templating
+1.  Import the EHS module. This module provides all necessary functions for parsing a html string.
+2.  Create and import the Template datatype. The must-have implementation can be found in the directory src/Data.hs.txt
+    - This implementation has to be updated if you want to use a custom datatype
+    - The src/Data.hs for example introduced the new constructor T_User for using the custom datatype User for templating
+3.  The basic usage of the parser looks like this:
+
+        [html|<div>string to parse</div>]
