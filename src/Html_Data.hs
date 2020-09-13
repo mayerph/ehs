@@ -156,7 +156,7 @@ instance Show Content where
     show (CVarM a b) = show b 
 
 instance Show SingleValue where
-    show (Single x) = concat ["<" ++ show x1 ++ ">" ++ (list_to_string $ x2) ++ "</" ++ id (getElemName x1) ++ ">"  | (x1, x2) <- x,  eval x1]
+    show (Single x) = concat ["<" ++ show x1 ++ ">" ++ (id $ list_to_string' x2) ++ "</" ++ id (getElemName x1) ++ ">"  | (x1, x2) <- x,  eval x1]
 
 instance Show HTMLValue where 
     show (HTML _ x) = show x
@@ -271,7 +271,7 @@ instance Lift BoolExpr where
     lift (BExprS x y) = appE (appE (conE 'BExprS) (lift x)) (appE (conE 'ValueB) (mkVar x))
 
 {-|
-  multiplies a html element regarding to the specified iteration pattern. 
+  multiplies a html element dependent to the specified iteration pattern. 
 -}
 mkFor:: For -> SingleValue -> ExpQ
 mkFor (F x y z) s = case s of 

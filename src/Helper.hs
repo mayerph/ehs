@@ -19,3 +19,7 @@ ws = many (oneOf " \t\n")
 -}
 list_to_string :: Show a => [a] -> String
 list_to_string = unwords . map show
+
+list_to_string' :: Show a => [a] -> String
+list_to_string' (x:xs) = show x ++ (list_to_string' xs)
+list_to_string' ([]) = ""

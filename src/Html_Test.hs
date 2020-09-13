@@ -30,7 +30,7 @@ minIncome = 2500
 
 {-|
   The 'testExpr_True' function demonstrates the boolean expression functionality of the app.
-  This functionality can be used to display information regarding to the data
+  This functionality can be used to display information depending on the data
 
   It can be used inside of the hIf attribute. The most simple form of an expression looks like this: data1 > data2. 
   Be careful. In front of the data you have to define the type by applying a constructor of the datatype 'template' (e. g. T_String x).
@@ -62,7 +62,7 @@ testPlaceholder = [html|<div id="{ T_Int uid user1 }">
 
 {-|
   The 'testIteration' function demonstrates the iteration functionality. 
-  It can be used to multiply html elements regarding to the provided list. 
+  It can be used to multiply html elements depending on the provided list. 
 
   1. To use this functionality you first have to pack the list and all its entries with a constructor of the datatype 'template'.
         (T_List [T_User user1, T_User user2, T_User user3])
@@ -98,4 +98,10 @@ unpackUser (T_User a) = a
   The 'testIO' function demonstrates how to write down the generated html to file. 
 -}
 testIO :: IO ()
-testIO = renderHtml "test.html" testExpr_True
+testIO = renderHtml "testio.html" testExpr_True
+
+
+simple = "HI"
+simple2 = "Du"
+testsimple :: [HTMLValue]
+testsimple = [html|<div>{{ T_String simple }} Hello World </div>|]
