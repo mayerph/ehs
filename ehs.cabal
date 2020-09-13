@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a6357b03c1b5819b13ea9233bd22d189e50d7663711cf0e485e15a5fabbb2e8c
+-- hash: 66c41b0fe6e6d555ea43228977d832764e9d0fe57dc179434f4722291d9ffb01
 
 name:           ehs
 version:        0.1.0.0
@@ -29,7 +29,6 @@ library
   exposed-modules:
       Data
       Ehs
-      File_Parser
       Helper
       Html_Data
       Html_Parser

@@ -7,14 +7,15 @@ import Text.ParserCombinators.Parsec hiding((<|>), many)
 import Control.Applicative
 import Control.Monad
 
-
+{-|
+  the 'ws' function reads new lines, tabs and whitespaces
+-}
 ws :: Parser String
 ws = many (oneOf " \t\n")
 
-lexeme p = p <* ws
 
-removeChars:: String -> Parser String
-removeChars a = many ((noneOf a) <* many (oneOf a))
-
+{-|
+  The 'list_to_string' function converts a list to a string. 
+-}
 list_to_string :: Show a => [a] -> String
 list_to_string = unwords . map show
