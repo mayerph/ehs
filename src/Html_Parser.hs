@@ -46,7 +46,7 @@ htmlContent :: Parser [HTMLValue]
 htmlContent = many $ (try htmlParser) <|> (HContent <$> (try (contentPlaceholder) <|> (CText <$> content <* ws)))
 
 {-|
-  The 'htmlParser' function parses all elements and content a single html element. 
+  The 'htmlParser' function parses all elements and content of a single html element. 
 -}
 htmlParser :: Parser HTMLValue
 htmlParser = do
