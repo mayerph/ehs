@@ -21,32 +21,113 @@ import Data.Typeable
 
 type AttributeName = String
 
-data Placeholder = Null | ValueB Bool | ValueA Template | P String
+{-|
+  The 'Placeholder' datatype is the haskell internal datatype for a placeholder.
+-}
+data Placeholder = 
+        Null  -- ^ used while parsing 
+    |   ValueB Bool -- ^ placeholder for data of the type Boolean
+    |   ValueA Template -- ^ placeholder for data of the type Template
+    |   P String -- ^ placeholder for data of the type Template
     deriving (Eq, Ord)
 
-data AttributeValue = Value String | Placeholder String Placeholder | PlaceholderM [String] Placeholder
+{-|
+  The 'AttributeValue' datatype is the haskell internal datatype for the value of a html attribute.
+-}
+data AttributeValue = 
+        Value String -- ^ static value 
+    |   Placeholder -- ^ dynamic value based on a placeholder
+            String -- ^ name/key of the placeholder
+            Placeholder -- ^ value of the placeholder
+    |   PlaceholderM  -- ^ dynamic value based on a placeholder
+            [String] -- ^ name/key of the placeholder and applied constructor an functions
+            Placeholder -- ^ value of the placeholder
 
-data Attribute =  A AttributeName | Av AttributeName AttributeValue | If Expr
+{-|
+  The 'Attribute' datatype is the haskell internal datatype for a html attribute.
+-}
+data Attribute =  
+        A AttributeName -- ^ attribute without a value
+    |   Av AttributeName AttributeValue -- ^ attribute with a value
+    |   If Expr -- ^ boolean expression 
 
+{-|
+  The 'Element' datatype is the haskell internal datatype for the meta information of a html element.
+  It has a name (e.g. div) and some attributes (class, id, hIf)
+-}
 data Element = EName String [Attribute] 
 
+{-|
+  The 'ForWrapper' datatype is a Wrapper Element which simplifies the parsing procedure.  
+-}
 data ForWrapper = FW Element For
 
-data Content = CText String | CVar String Placeholder | CVarM [String] Placeholder
+{-|
+  The 'Content' datatype is the haskell internal datatype for the content of a html Element.
+-}
+data Content = 
+        CText String -- ^ static content 
+    |   CVar -- ^ dynamic content based on a placeholder
+            String -- ^ name/key of the placeholder
+            Placeholder -- ^ value of the placeholder 
+    |   CVarM -- ^ dynamic content based on a placeholder
+            [String] -- ^ name/key of the placeholder and applied constructor an functions
+            Placeholder -- ^ value of the placeholder 
 
+{-|
+  The 'SingleValue' datatype is the haskell internal datatype for a single html element with all its content and children.
+  The Single constructor contains a list because an iteration pattern can multiply the appearance of a html element. 
+-}
 data SingleValue = Single [(Element, [HTMLValue])]
 
-data HTMLValue = HTML For SingleValue  | HContent Content
+{-|
+  The 'HTMLValue' datatype is the haskell internal datatype for the whole html document starting with a root element.
+-}
+data HTMLValue = 
+        HTML -- ^ html element 
+            For -- ^ iteration pattern for a html element
+            SingleValue -- ^ the html element itself
+    |   HContent Content -- ^ content (static or dynamic) of a html element
 
-data For = N | F String String Template | FM [String] String Template
+{-|
+  The 'For' datatype is the haskell internal datatype for the iteration pattern of a html element. 
+-}
+data For = 
+        N -- ^ constructor if there isn't an iteration pattern
+    |   F -- ^ constructor for an iteration pattern
+            String -- ^ name/key of a list entry
+            String -- ^ name/key of the list
+            Template -- ^ value of the list
+    |   FM -- ^ constructor for an iteration pattern
+            [String] -- ^ name/key of a list entry with its applied constructor and functions
+            String -- ^ name/key of the list
+            Template -- ^ value of the list
     deriving Show
 
+{-|
+  The 'BoolOp' datatype is the haskell internal datatype for a boolean comparison operator. 
+-}
 data BoolOp = Eq | Lt | Gt | Le | Ge | Ne
     deriving (Show, Eq, Ord)
 
-data BoolExpr = BExpr [String] BoolOp [String] Placeholder Placeholder | BExprS String Placeholder
+{-|
+  The 'BoolExpr' datatype is the haskell internal datatype for a single boolean expression. 
+-}
+data BoolExpr = 
+        BExpr -- ^ constructor for a boolean expression
+            [String] -- ^ name/key of the right term of a boolean expression with its applied constructor and functions
+            BoolOp -- ^ boolean comparison operator
+            [String] -- ^ name/key of the left term of a boolean expression with its applied constructor and functions
+            Placeholder -- ^ value of the right term of a boolean expression
+            Placeholder -- ^ value of the left term of a boolean expression
+    |   BExprS -- ^ constructor for a placeholder based boolean expression
+            String -- ^ name/key of the placeholder
+            Placeholder -- ^ value of the placeholder
     deriving (Show, Eq, Ord)
 
+{-|
+  The 'Expr' datatype is the haskell internal datatype for boolean expressions combined with logical operators. 
+-}
 data Expr = Not Expr | And Expr Expr | Or Expr Expr | Var BoolExpr | SubExpr Expr
     deriving(Eq, Show)  
 
@@ -84,12 +165,8 @@ instance Show HTMLValue where
 
 instance Lift For where
     lift (N) = (conE 'N)
-    --lift (F x y z) = appE (appE (appE (conE 'F) (lift x)) (lift y)) (mkVar y)
     lift (F x y z) = appE (appE (appE (conE 'F) (lift x)) (lift y)) (mkVar y)
     lift (FM x y z) = appE (appE (appE (conE 'FM) (lift x)) (lift y)) (appE (conE 'T_List) (mkList x y))
-
-mkList (x1:x2:[]) y = compE [bindS (varP $ name) (varE $ mkName y), noBindS (appE (conE $ mkName x1) (varE name))]
-    where name = mkName x2
     
 instance Lift HTMLValue where
     lift (HTML x y) = appE (appE (conE 'HTML) (lift x)) (mkFor x y)
@@ -102,8 +179,6 @@ instance Lift Content where
     lift (CText i) = appE (conE 'CText) (lift i)
     lift (CVar x y) = appE (appE (conE 'CVar) (lift x)) (appE (conE 'P) (newShow $ mkVar x))
     lift (CVarM x y) = appE (appE (conE 'CVarM) (lift x)) (appE (conE 'ValueA) (mkVarExtension x))
-
-newShow x = appE (varE $ mkName "show") x
 
 instance Lift Element where
     lift (EName x y) = appE (appE (conE 'EName) (lift x)) (lift y)
@@ -143,22 +218,20 @@ instance Lift BoolExpr where
     lift (BExpr x y z i j) = appE (appE (appE (appE (appE (conE 'BExpr) (lift x)) (lift y)) (lift z)) (appE (conE 'ValueA) (mkVarExtension x))) (appE (conE 'ValueA) (mkVarExtension z))
     lift (BExprS x y) = appE (appE (conE 'BExprS) (lift x)) (appE (conE 'ValueB) (mkVar x))
     
-
 mkFor:: For -> SingleValue -> ExpQ
 mkFor (F x y z) s = case s of 
     (Single a) -> do
-        let multSingle = compE [bindS (varP $ mkName x) (appE unpack_ (varE $ mkName y)), noBindS (appE (varE $ mkName "f") (lift a))]
+        let multSingle = compE [bindS (varP $ mkName x) (appE unpack_ (varE $ mkName y)), noBindS (lift a)]
         let single = appE (varE $ mkName "concat") (multSingle)
         appE (conE 'Single) (single)
         where 
             unpack_ = varE $ mkName "unpack"
-
 mkFor (FM (x1:x2:[]) y z) s = case s of 
     (Single a) -> do
         let name = mkName x2
         let newList = compE [bindS (varP name) (mkVar y), noBindS (appE (conE $ mkName x1) (varE name))]
 
-        let multSingle = compE [bindS (varP $ mkName x2) (appE unpack_ ((appE (conE 'T_List) newList))), noBindS (appE (varE $ mkName "f") (lift a))]
+        let multSingle = compE [bindS (varP $ mkName x2) (appE unpack_ ((appE (conE 'T_List) newList))), noBindS (lift a)]
         let single = appE (varE $ mkName "concat") (multSingle)
         appE (conE 'Single) (single)
         where 
@@ -168,20 +241,19 @@ mkFor (FM (x1:x2:[]) y z) s = case s of
 mkFor (N) s = case s of 
     (Single a) -> lift s
 
-
-
-
 unpack a = case a of 
     T_List list -> list
     _ -> []
 
-
-
-
-
 mkVar :: String -> ExpQ
 mkVar a = varE $ mkName a
 
+mkVarExtension :: [String] -> ExpQ
+mkVarExtension (c:[]) = mkVar c
+mkVarExtension (c:list) = appE (conE $ mkName c) (myReverse list)
+    where 
+        myReverse (x1:[]) = mkVar x1
+        myReverse (x1:xr) = appE (mkVar x1) (myReverse xr)
 
 filterAttribute :: Attribute -> Bool
 filterAttribute (A x) = True
@@ -198,6 +270,10 @@ eval (EName a b) = all (\x -> x) (map (\x ->
         _ -> True
     ) b)
 
+{-|
+  The 'evalSatis' evaluates a combined set of boolean expression.  
+  returns True or False.
+-}
 evalSatis :: Expr -> Bool
 evalSatis (Or e1 e2) = (evalSatis e1 || evalSatis e2)
 evalSatis (And e1 e2) = (evalSatis e1 && evalSatis e2)
@@ -205,6 +281,10 @@ evalSatis (Var a) = evalBoolean a
 evalSatis (SubExpr a) = evalSatis a
 evalSatis (Not e) = not (evalSatis e)
 
+{-|
+  The 'evalBoolean' evaluates a single boolean expression.  
+  returns True or False.
+-}
 evalBoolean :: BoolExpr -> Bool
 evalBoolean (BExpr _ Eq _ x y) = x == y
 evalBoolean (BExpr _ Lt _ x y) = x < y
@@ -214,13 +294,18 @@ evalBoolean (BExpr _ Ge _ x y) = x >= y
 evalBoolean (BExpr _ Ne _ x y) = x /= y
 evalBoolean _ = False
 
-f a = a
+{-|
+  applies the function show to template haskell expression.  
+-}
+newShow :: ExpQ -> ExpQ
+newShow x = appE (varE $ mkName "show") x
+
+{-|
+  creates a list comprehension in template haskell syntax for evaluating placeholder patterns.  
+  placeholder patterns: e.g. T_String firstName user1
+-}
+mkList :: [String] -> String -> ExpQ
+mkList (x1:x2:[]) y = compE [bindS (varP $ name) (varE $ mkName y), noBindS (appE (conE $ mkName x1) (varE name))]
+    where name = mkName x2
 
 
-
-mkVarExtension :: [String] -> ExpQ
-mkVarExtension (c:[]) = mkVar c
-mkVarExtension (c:list) = appE (conE $ mkName c) (myReverse list)
-    where 
-        myReverse (x1:[]) = mkVar x1
-        myReverse (x1:xr) = appE (mkVar x1) (myReverse xr)
